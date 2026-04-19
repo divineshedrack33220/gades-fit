@@ -1,0 +1,718 @@
+<%- include('../partials/header') %>
+
+<!-- Cart Hero -->
+<section class="page-hero">
+  <div class="container">
+    <h1 class="page-title">Your <span class="accent-text">Cart</span></h1>
+    <p class="page-subtitle">Review your items before checkout</p>
+  </div>
+</section>
+
+<!-- Cart Section -->
+<section class="cart-section">
+  <div class="container">
+   
+    <div class="cart-container">
+      <div class="cart-items" id="cartItemsContainer">
+        <div class="loading-cart">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="9" cy="21" r="1"/>
+            <circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          <span>Loading your cart...</span>
+        </div>
+      </div>
+      
+      <div class="cart-summary" id="cartSummary" style="display: none;">
+        <h2>Order Summary</h2>
+        
+        <div class="summary-row">
+          <span>Subtotal (<span id="itemCount">0</span> items)</span>
+          <span id="subtotal">₦0</span>
+        </div>
+        
+        <div class="summary-row">
+          <span>Shipping</span>
+          <span id="shipping">Free</span>
+        </div>
+        
+        <div class="summary-row total-row">
+          <span>Total</span>
+          <span id="total">₦0</span>
+        </div>
+        
+        <button class="btn btn-primary btn-full checkout-btn" id="checkoutButton">
+          Proceed to Checkout
+        </button>
+        
+        <div class="cart-notes">
+          <p>✓ Free shipping on orders over ₦50,000</p>
+          <p>✓ 7-day easy returns</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="continue-shopping">
+      <a href="/products" class="continue-link">← Continue Shopping</a>
+      <button id="clearCartBtn" class="clear-cart-btn">Clear Cart</button>
+    </div>
+    
+  </div>
+</section>
+
+<!-- Checkout Modal -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal checkout-modal">
+    <div class="modal-header">
+      <h3>Complete Your Order</h3>
+      <button class="modal-close" id="closeModalBtn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="checkoutForm">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" name="customerName" id="customerName" placeholder="Abigail Sam" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" name="customerEmail" id="customerEmail" placeholder="hello@gadesfit.com" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <input type="tel" name="customerPhone" id="customerPhone" placeholder="+234 123 456 7890" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Delivery Address *</label>
+          <textarea name="shippingAddress" id="shippingAddress" rows="3" placeholder="Street, City, State" required></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>Additional Notes (Optional)</label>
+          <textarea name="orderNotes" id="orderNotes" rows="2" placeholder="Any special instructions..."></textarea>
+        </div>
+        
+        <div class="order-summary-mini">
+          <p><strong>Order Total:</strong> <span id="modalTotal">₦0</span></p>
+          <p><strong>Items:</strong> <span id="modalItemCount">0</span></p>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-full" id="submitOrderBtn">Place Order</button>
+        <p class="form-note">We'll contact you within 24 hours to confirm your order.</p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+.loading-cart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+.loading-cart svg {
+  opacity: 0.5;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.empty-cart-message {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+}
+.empty-cart-message svg {
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+.empty-cart-message p {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-muted);
+}
+.cart-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  margin-bottom: 1rem;
+  align-items: center;
+}
+.cart-item-image img {
+  width: 100px;
+  height: 125px;
+  object-fit: cover;
+}
+.cart-item-details {
+  flex: 1;
+  min-width: 200px;
+}
+.cart-item-details h3 {
+  margin-bottom: 0.25rem;
+  font-size: 1.1rem;
+}
+.cart-item-category {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.cart-item-color, .cart-item-size {
+  font-size: 0.85rem;
+}
+.cart-item-price {
+  font-weight: 600;
+  color: var(--olive);
+}
+.cart-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+}
+.remove-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #999;
+  padding: 5px;
+  transition: color 0.2s;
+}
+.remove-btn:hover {
+  color: #D93838;
+}
+.cart-item-quantity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.qty-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+}
+.qty-btn:hover {
+  background: var(--olive);
+  color: white;
+  border-color: var(--olive);
+}
+.qty-input {
+  width: 50px;
+  text-align: center;
+  border: 1px solid #ddd;
+  padding: 0.4rem;
+}
+.cart-item-total {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--olive);
+  min-width: 100px;
+  text-align: right;
+}
+.cart-summary {
+  background: var(--white);
+  padding: 1.5rem;
+  border: 1px solid var(--border-light);
+  margin-top: 1.5rem;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+.total-row {
+  font-weight: 700;
+  font-size: 1.2rem;
+  border-top: 1px solid var(--border-light);
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+}
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+.modal-overlay.active {
+  display: flex;
+}
+.modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.modal-close:hover {
+  color: var(--burgundy);
+}
+.order-summary-mini {
+  background: var(--bg-light);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+.form-group {
+  margin-bottom: 1rem;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--border-light);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--olive);
+}
+.form-note {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.continue-shopping {
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.continue-link {
+  color: var(--olive);
+  text-decoration: none;
+  font-weight: 500;
+}
+.continue-link:hover {
+  color: var(--burgundy);
+}
+.clear-cart-btn {
+  background: none;
+  border: none;
+  color: #D93838;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+.clear-cart-btn:hover {
+  color: #b91c1c;
+}
+.checkout-btn {
+  cursor: pointer;
+  margin-top: 1rem;
+}
+@media (max-width: 768px) {
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cart-item-total {
+    text-align: left;
+  }
+}
+</style>
+
+<script>
+// ============================================
+// TOAST & CONFIRM MODAL SYSTEMS
+// ============================================
+(function() {
+  'use strict';
+  
+  // Toast System
+  const Toast = {
+    container: null,
+    
+    init() {
+      if (this.container) return;
+      this.container = document.createElement('div');
+      this.container.className = 'toast-container';
+      document.body.appendChild(this.container);
+    },
+    
+    show(message, type = 'success') {
+      this.init();
+      const icons = { success: '✓', error: '✕', warning: '!', info: 'i' };
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || '✓'}</span>
+        <div class="toast-content">
+          <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close">✕</button>
+        <div class="toast-progress"></div>
+      `;
+      this.container.appendChild(toast);
+      toast.querySelector('.toast-close').addEventListener('click', () => this.remove(toast));
+      const timeout = setTimeout(() => this.remove(toast), 3000);
+      toast.dataset.timeout = timeout;
+    },
+    
+    remove(toast) {
+      clearTimeout(parseInt(toast.dataset.timeout));
+      toast.style.animation = 'slideInToast 0.3s ease reverse';
+      setTimeout(() => toast.remove(), 300);
+    }
+  };
+  
+  // Confirm Modal
+  const ConfirmModal = {
+    overlay: null,
+    
+    init() {
+      if (document.getElementById('confirmModalOverlay')) return;
+      this.overlay = document.createElement('div');
+      this.overlay.id = 'confirmModalOverlay';
+      this.overlay.className = 'confirm-modal-overlay';
+      this.overlay.innerHTML = `
+        <div class="confirm-modal">
+          <div class="confirm-modal-header">
+            <div class="confirm-modal-icon">!</div>
+            <h3 id="confirmModalTitle">Confirm</h3>
+          </div>
+          <div class="confirm-modal-body" id="confirmModalMessage">Are you sure?</div>
+          <div class="confirm-modal-footer">
+            <button class="btn btn-outline" id="confirmModalCancel">Cancel</button>
+            <button class="btn btn-danger" id="confirmModalConfirm">Confirm</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(this.overlay);
+      document.getElementById('confirmModalCancel').addEventListener('click', () => this.hide());
+      this.overlay.addEventListener('click', (e) => { if (e.target === this.overlay) this.hide(); });
+    },
+    
+    show(options = {}) {
+      this.init();
+      const { title = 'Confirm', message = 'Are you sure?', onConfirm = () => {} } = options;
+      document.getElementById('confirmModalTitle').textContent = title;
+      document.getElementById('confirmModalMessage').textContent = message;
+      const confirmBtn = document.getElementById('confirmModalConfirm');
+      const newBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+      newBtn.addEventListener('click', () => { onConfirm(); this.hide(); });
+      this.overlay.classList.add('active');
+    },
+    
+    hide() { this.overlay.classList.remove('active'); }
+  };
+  
+  window.Toast = Toast;
+  window.ConfirmModal = ConfirmModal;
+})();
+
+// ============================================
+// CART FUNCTIONS
+// ============================================
+
+
+window.getCart = function() {
+  try {
+    return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+  } catch (e) {
+    return [];
+  }
+};
+
+window.saveCart = function(items) {
+  localStorage.setItem(CART_KEY, JSON.stringify(items));
+  window.updateCartCount();
+};
+
+window.updateCartCount = function() {
+  const items = window.getCart();
+  const count = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  document.querySelectorAll('.cart-count').forEach(el => {
+    el.textContent = count;
+    el.style.display = count > 0 ? 'inline-block' : 'none';
+  });
+};
+
+window.getCartSubtotal = function() {
+  const items = window.getCart();
+  return items.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 1)), 0);
+};
+
+window.getCartItemCount = function() {
+  const items = window.getCart();
+  return items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+};
+
+window.removeItemByIndex = function(index) {
+  ConfirmModal.show({
+    title: 'Remove Item',
+    message: 'Are you sure you want to remove this item from your cart?',
+    onConfirm: () => {
+      const items = window.getCart();
+      items.splice(index, 1);
+      window.saveCart(items);
+      window.renderCart();
+      Toast.show('Item removed from cart', 'info');
+    }
+  });
+};
+
+window.updateQuantityByIndex = function(index, change) {
+  const items = window.getCart();
+  const item = items[index];
+  if (item) {
+    const newQty = (item.quantity || 1) + change;
+    if (newQty >= 1 && newQty <= 99) {
+      item.quantity = newQty;
+      window.saveCart(items);
+      window.renderCart();
+    }
+  }
+};
+
+window.clearCart = function() {
+  ConfirmModal.show({
+    title: 'Clear Cart',
+    message: 'Are you sure you want to remove all items from your cart?',
+    onConfirm: () => {
+      localStorage.removeItem(CART_KEY);
+      window.updateCartCount();
+      window.renderCart();
+      Toast.show('Cart cleared', 'info');
+    }
+  });
+};
+
+// ============================================
+// RENDER CART
+// ============================================
+window.renderCart = function() {
+  const container = document.getElementById('cartItemsContainer');
+  const summary = document.getElementById('cartSummary');
+  
+  if (!container) return;
+  
+  const items = window.getCart();
+  
+  if (items.length === 0) {
+    container.innerHTML = `
+      <div class="empty-cart-message">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="9" cy="21" r="1"/>
+          <circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        <p>Your cart is empty.</p>
+        <a href="/products" class="btn btn-primary">Start Shopping</a>
+      </div>
+    `;
+    if (summary) summary.style.display = 'none';
+    return;
+  }
+  
+  if (summary) summary.style.display = 'block';
+  
+  let html = '';
+  let subtotal = 0;
+  let itemCount = 0;
+  
+  items.forEach(function(item, index) {
+    const itemTotal = (item.price || 0) * (item.quantity || 1);
+    subtotal += itemTotal;
+    itemCount += (item.quantity || 1);
+    
+    html += `
+      <div class="cart-item">
+        <div class="cart-item-image">
+          <img src="${item.image || '/images/placeholder.jpg'}" alt="${item.name}" onerror="this.src='/images/placeholder.jpg'">
+        </div>
+        <div class="cart-item-details">
+          <div class="cart-item-header">
+            <h3>${item.name}</h3>
+            <button class="remove-btn" onclick="window.removeItemByIndex(${index})">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <p class="cart-item-category">${item.category || 'Uncategorized'}</p>
+          <p class="cart-item-color">Color: ${item.color || 'Default'}</p>
+          <p class="cart-item-size">Size: ${item.size || 'One Size'}</p>
+          <div class="cart-item-price">₦${(item.price || 0).toLocaleString()}</div>
+        </div>
+        <div class="cart-item-quantity">
+          <button class="qty-btn" onclick="window.updateQuantityByIndex(${index}, -1)">−</button>
+          <input type="number" value="${item.quantity || 1}" min="1" max="99" class="qty-input" readonly>
+          <button class="qty-btn" onclick="window.updateQuantityByIndex(${index}, 1)">+</button>
+        </div>
+        <div class="cart-item-total">₦${itemTotal.toLocaleString()}</div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+  
+  const shipping = subtotal >= 50000 ? 0 : 2500;
+  const total = subtotal + shipping;
+  
+  document.getElementById('itemCount').textContent = itemCount;
+  document.getElementById('subtotal').textContent = '₦' + subtotal.toLocaleString();
+  document.getElementById('shipping').textContent = shipping === 0 ? 'Free' : '₦' + shipping.toLocaleString();
+  document.getElementById('total').textContent = '₦' + total.toLocaleString();
+};
+
+// ============================================
+// CHECKOUT MODAL
+// ============================================
+function openCheckoutModal() {
+  const items = window.getCart();
+  if (items.length === 0) {
+    Toast.show('Your cart is empty!', 'warning');
+    return;
+  }
+  
+  const subtotal = window.getCartSubtotal();
+  const shipping = subtotal >= 50000 ? 0 : 2500;
+  const total = subtotal + shipping;
+  const itemCount = window.getCartItemCount();
+  
+  document.getElementById('modalTotal').textContent = '₦' + total.toLocaleString();
+  document.getElementById('modalItemCount').textContent = itemCount + ' items';
+  document.getElementById('checkoutModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCheckoutModal() {
+  document.getElementById('checkoutModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// ============================================
+// INITIALIZE
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+  window.renderCart();
+  
+  const checkoutBtn = document.getElementById('checkoutButton');
+  if (checkoutBtn) checkoutBtn.addEventListener('click', openCheckoutModal);
+  
+  const clearBtn = document.getElementById('clearCartBtn');
+  if (clearBtn) clearBtn.addEventListener('click', () => window.clearCart());
+  
+  const closeBtn = document.getElementById('closeModalBtn');
+  if (closeBtn) closeBtn.addEventListener('click', closeCheckoutModal);
+  
+  const modal = document.getElementById('checkoutModal');
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) closeCheckoutModal();
+    });
+  }
+  
+  const form = document.getElementById('checkoutForm');
+  if (form) {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const items = window.getCart();
+      if (items.length === 0) {
+        Toast.show('Your cart is empty!', 'warning');
+        return;
+      }
+      
+      const subtotal = window.getCartSubtotal();
+      const shipping = subtotal >= 50000 ? 0 : 2500;
+      const total = subtotal + shipping;
+      
+      const orderData = {
+        customerName: document.getElementById('customerName').value,
+        customerEmail: document.getElementById('customerEmail').value,
+        customerPhone: document.getElementById('customerPhone').value,
+        shippingAddress: document.getElementById('shippingAddress').value,
+        orderNotes: document.getElementById('orderNotes').value,
+        items: items,
+        subtotal: subtotal,
+        shipping: shipping,
+        total: total
+      };
+      
+      const submitBtn = document.getElementById('submitOrderBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Processing...';
+      
+      try {
+        const response = await fetch('/orders/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          localStorage.removeItem(CART_KEY);
+          Toast.show('Order placed successfully! Order ID: ' + data.orderId, 'success');
+          setTimeout(() => window.location.href = '/', 2000);
+        } else {
+          Toast.show(data.message || 'Failed to place order', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Place Order';
+        }
+      } catch (error) {
+        Toast.show('Network error. Please try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Place Order';
+      }
+    });
+  }
+});
+
+window.renderCart();
+</script>
+
+<%- include('../partials/footer') %>

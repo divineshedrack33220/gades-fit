@@ -1,0 +1,794 @@
+<%- include('partials/admin-header') %>
+
+<div class="admin-products">
+  <div class="page-header">
+    <h2>Products</h2>
+    <div class="page-header-actions">
+      <div class="search-wrapper">
+        <span class="search-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </span>
+        <input type="text" 
+               id="productSearch" 
+               class="search-input search-input-icon" 
+               placeholder="Search products..." 
+               aria-label="Search products">
+      </div>
+      <a href="/admin/products/add" class="btn btn-primary">
+        <span class="btn-icon-left">+</span> Add New Product
+      </a>
+    </div>
+  </div>
+  
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-filter="all">
+      <span class="tab-label">All</span>
+      <span class="tab-count" id="allCount"><%= products.length %></span>
+    </button>
+    <button class="filter-tab" data-filter="inStock">
+      <span class="tab-label">In Stock</span>
+      <span class="tab-count" id="inStockCount"><%= products.filter(p => p.inStock).length %></span>
+    </button>
+    <button class="filter-tab" data-filter="outOfStock">
+      <span class="tab-label">Out of Stock</span>
+      <span class="tab-count" id="outStockCount"><%= products.filter(p => !p.inStock).length %></span>
+    </button>
+    <button class="filter-tab" data-filter="featured">
+      <span class="tab-label">Featured</span>
+      <span class="tab-count" id="featuredCount"><%= products.filter(p => p.featured).length %></span>
+    </button>
+  </div>
+  
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="alert alert-success" role="alert">
+      <span class="alert-icon">✓</span>
+      <span class="alert-message"><%= success %></span>
+      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+  <% } %>
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-error" role="alert">
+      <span class="alert-icon">!</span>
+      <span class="alert-message"><%= error %></span>
+      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+  <% } %>
+  
+  <% if (products && products.length > 0) { %>
+    <div class="table-responsive">
+      <table class="admin-table" id="productsTable">
+        <thead>
+          <tr>
+            <th style="width: 40px;">
+              <input type="checkbox" id="selectAll" title="Select all products">
+            </th>
+            <th>Image</th>
+            <th>Product Name</th>
+            <th>Price</th>
+            <th>Category</th>
+            <th>Rating</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% products.forEach(function(product) { 
+            var rating = product.comfyRating || 5;
+            var priceDisplay = typeof product.price === 'number' ? product.price.toLocaleString() : product.price;
+          %>
+            <tr class="product-row" 
+                data-id="<%= product._id %>"
+                data-name="<%= product.name.toLowerCase() %>"
+                data-category="<%= (product.category || '').toLowerCase() %>"
+                data-status="<%= product.inStock ? 'inStock' : 'outOfStock' %>"
+                data-featured="<%= product.featured ? 'featured' : '' %>">
+              <td>
+                <input type="checkbox" class="product-checkbox" value="<%= product._id %>">
+              </td>
+              <td>
+                <% if (product.imageUrl) { %>
+                  <img src="<%= product.imageUrl %>" 
+                       alt="<%= product.name %>" 
+                       class="product-thumbnail"
+                       loading="lazy"
+                       onerror="this.src='/images/placeholder.jpg'">
+                <% } else { %>
+                  <span class="no-image">No Image</span>
+                <% } %>
+              </td>
+              <td>
+                <strong><%= product.name %></strong>
+                <% if (product.featured) { %>
+                  <span class="featured-star" title="Featured Product">★</span>
+                <% } %>
+              </td>
+              <td class="price-cell">₦<%= priceDisplay %></td>
+              <td>
+                <span class="category-badge">
+                  <%= product.category || 'Uncategorized' %>
+                </span>
+              </td>
+              <td>
+                <div class="rating-display" title="Comfy Rating: <%= rating %>/5">
+                  <% for (var i = 1; i <= 5; i++) { %>
+                    <span class="star<%= i <= rating ? ' filled' : '' %>">★</span>
+                  <% } %>
+                </div>
+              </td>
+              <td>
+                <% if (product.inStock) { %>
+                  <span class="badge badge-success">In Stock</span>
+                <% } else { %>
+                  <span class="badge badge-danger">Out of Stock</span>
+                <% } %>
+              </td>
+              <td class="actions">
+                <a href="/admin/products/edit/<%= product._id %>" class="btn-icon" title="Edit">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/>
+                  </svg>
+                </a>
+                <a href="/product/<%= product._id %>" class="btn-icon" title="View" target="_blank">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </a>
+                <form action="/admin/products/delete/<%= product._id %>" method="POST" class="delete-form" style="display: inline;" onsubmit="return confirm('Delete this product?')">
+                  <button type="submit" class="btn-icon" title="Delete">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 6h18"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Bulk Actions Bar -->
+    <div class="bulk-actions" id="bulkActions" style="display: none;">
+      <span class="selected-count"><span id="selectedCount">0</span> selected</span>
+      <div class="bulk-buttons">
+        <button class="btn btn-outline btn-sm" onclick="bulkSetStock(true)">Mark In Stock</button>
+        <button class="btn btn-outline btn-sm" onclick="bulkSetStock(false)">Mark Out of Stock</button>
+        <button class="btn btn-outline btn-sm" onclick="bulkSetFeatured(true)">Mark Featured</button>
+        <button class="btn btn-outline btn-sm" onclick="bulkSetFeatured(false)">Unmark Featured</button>
+        <button class="btn btn-danger btn-sm" onclick="bulkDelete()">Delete</button>
+      </div>
+      <button class="bulk-close" onclick="clearSelection()">×</button>
+    </div>
+    
+    <!-- Product Stats -->
+    <div class="product-stats">
+      <div class="stat-item">
+        <span class="stat-label">Total Products</span>
+        <span class="stat-value" id="totalProducts"><%= products.length %></span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">In Stock</span>
+        <span class="stat-value text-success" id="inStockTotal"><%= products.filter(p => p.inStock).length %></span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Out of Stock</span>
+        <span class="stat-value text-danger" id="outStockTotal"><%= products.filter(p => !p.inStock).length %></span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Featured</span>
+        <span class="stat-value text-warning" id="featuredTotal"><%= products.filter(p => p.featured).length %></span>
+      </div>
+    </div>
+    
+    <!-- Pagination -->
+    <% if (typeof pagination !== 'undefined' && pagination.pages > 1) { %>
+      <div class="pagination">
+        <% if (pagination.page > 1) { %>
+          <a href="?page=<%= pagination.page - 1 %>" class="pagination-prev">← Previous</a>
+        <% } %>
+        <span class="pagination-info">Page <%= pagination.page %> of <%= pagination.pages %></span>
+        <% if (pagination.page < pagination.pages) { %>
+          <a href="?page=<%= pagination.page + 1 %>" class="pagination-next">Next →</a>
+        <% } %>
+      </div>
+    <% } %>
+    
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M20 7v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7"/>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+      </div>
+      <h3>No Products Found</h3>
+      <p>Get started by adding your first product to the catalog.</p>
+      <a href="/admin/products/add" class="btn btn-primary">Add Your First Product</a>
+    </div>
+  <% } %>
+</div>
+
+<style>
+/* Search with Icon */
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.search-input-icon {
+  padding-left: 36px !important;
+}
+
+.btn-icon-left {
+  margin-right: 6px;
+  font-weight: 600;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 12px;
+}
+
+.filter-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-muted);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.filter-tab:hover {
+  background: var(--bg-light);
+}
+
+.filter-tab.active {
+  background: var(--olive);
+  color: white;
+}
+
+.tab-count {
+  background: rgba(0,0,0,0.08);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.filter-tab.active .tab-count {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+/* Alerts */
+.alert {
+  padding: 14px 20px;
+  margin-bottom: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.alert-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.alert-icon {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.alert-message {
+  flex: 1;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 0 4px;
+}
+
+.alert-close:hover {
+  opacity: 1;
+}
+
+/* Table */
+.table-responsive {
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid var(--border-light);
+}
+
+.admin-table th {
+  padding: 14px 16px;
+  text-align: left;
+  background: var(--bg-light);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  border-bottom: 2px solid var(--border-light);
+}
+
+.admin-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+
+.admin-table tbody tr:hover {
+  background: var(--bg-light);
+}
+
+.product-thumbnail {
+  width: 50px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.featured-star {
+  margin-left: 6px;
+  font-size: 14px;
+  color: #FFB800;
+}
+
+.category-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  text-transform: uppercase;
+  background: var(--bg-light);
+}
+
+.rating-display {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  color: #ddd;
+  font-size: 14px;
+}
+
+.star.filled {
+  color: #FFB800;
+}
+
+.price-cell {
+  font-weight: 600;
+  color: var(--olive);
+}
+
+/* Bulk Actions */
+.bulk-actions {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  z-index: 100;
+  border: 1px solid var(--border-light);
+}
+
+.bulk-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.selected-count {
+  font-weight: 500;
+}
+
+.bulk-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 8px;
+  color: var(--text-muted);
+}
+
+.bulk-close:hover {
+  color: var(--text-dark);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.btn-danger {
+  background: #D93838;
+  color: white;
+  border-color: #D93838;
+}
+
+.btn-danger:hover {
+  background: #c53030;
+}
+
+/* Product Stats */
+.product-stats {
+  margin-top: 24px;
+  padding: 24px;
+  background: white;
+  border: 1px solid var(--border-light);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--olive);
+}
+
+.text-success { color: #2D6A4F; }
+.text-danger { color: #D93838; }
+.text-warning { color: #FFB800; }
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.pagination-prev,
+.pagination-next {
+  padding: 8px 16px;
+  border: 1px solid var(--border-light);
+  text-decoration: none;
+  color: var(--text-dark);
+  transition: all 0.2s;
+  border-radius: 4px;
+}
+
+.pagination-prev:hover,
+.pagination-next:hover {
+  background: var(--olive);
+  color: white;
+  border-color: var(--olive);
+}
+
+.pagination-info {
+  color: var(--text-muted);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 64px 32px;
+  background: white;
+  border: 1px solid var(--border-light);
+}
+
+.empty-icon {
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: var(--text-dark);
+}
+
+.empty-state p {
+  margin-bottom: 24px;
+  color: var(--text-muted);
+}
+
+/* Badges */
+.badge {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.badge-success {
+  background: #2D6A4F;
+  color: white;
+}
+
+.badge-danger {
+  background: #D93838;
+  color: white;
+}
+
+/* Action Buttons */
+.actions {
+  white-space: nowrap;
+  display: flex;
+  gap: 4px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  text-decoration: none;
+  color: var(--text-muted);
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  background: var(--border-light);
+  color: var(--text-dark);
+}
+
+.delete-form {
+  display: inline;
+}
+
+.no-image {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 60px;
+  background: var(--bg-light);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+/* Row hiding */
+.product-row.hidden {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .page-header-actions {
+    flex-direction: column;
+  }
+  
+  .search-wrapper {
+    width: 100%;
+  }
+  
+  .search-input {
+    width: 100%;
+  }
+  
+  .filter-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .product-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .bulk-actions {
+    flex-direction: column;
+    width: 90%;
+    padding: 16px;
+  }
+  
+  .bulk-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+</style>
+
+<script>
+// Search functionality
+const searchInput = document.getElementById('productSearch');
+if (searchInput) {
+  searchInput.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('.product-row');
+    
+    rows.forEach(row => {
+      const name = row.dataset.name || '';
+      const category = row.dataset.category || '';
+      
+      if (name.includes(searchTerm) || category.includes(searchTerm)) {
+        row.classList.remove('hidden');
+      } else {
+        row.classList.add('hidden');
+      }
+    });
+    
+    updateCounts();
+  });
+}
+
+// Filter tabs
+const filterTabs = document.querySelectorAll('.filter-tab');
+filterTabs.forEach(tab => {
+  tab.addEventListener('click', function() {
+    filterTabs.forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    
+    const filter = this.dataset.filter;
+    const rows = document.querySelectorAll('.product-row');
+    
+    rows.forEach(row => {
+      if (filter === 'all') {
+        row.classList.remove('hidden');
+      } else if (filter === 'inStock') {
+        row.classList.toggle('hidden', row.dataset.status !== 'inStock');
+      } else if (filter === 'outOfStock') {
+        row.classList.toggle('hidden', row.dataset.status !== 'outOfStock');
+      } else if (filter === 'featured') {
+        row.classList.toggle('hidden', !row.dataset.featured);
+      }
+    });
+    
+    updateCounts();
+  });
+});
+
+// Update count displays
+function updateCounts() {
+  const rows = document.querySelectorAll('.product-row');
+  const visibleRows = Array.from(rows).filter(r => !r.classList.contains('hidden'));
+  
+  document.getElementById('allCount').textContent = visibleRows.length;
+  document.getElementById('inStockCount').textContent = visibleRows.filter(r => r.dataset.status === 'inStock').length;
+  document.getElementById('outStockCount').textContent = visibleRows.filter(r => r.dataset.status === 'outOfStock').length;
+  document.getElementById('featuredCount').textContent = visibleRows.filter(r => r.dataset.featured).length;
+  
+  document.getElementById('totalProducts').textContent = visibleRows.length;
+  document.getElementById('inStockTotal').textContent = visibleRows.filter(r => r.dataset.status === 'inStock').length;
+  document.getElementById('outStockTotal').textContent = visibleRows.filter(r => r.dataset.status === 'outOfStock').length;
+  document.getElementById('featuredTotal').textContent = visibleRows.filter(r => r.dataset.featured).length;
+}
+
+// Select all functionality
+const selectAll = document.getElementById('selectAll');
+const checkboxes = document.querySelectorAll('.product-checkbox');
+const bulkActions = document.getElementById('bulkActions');
+const selectedCount = document.getElementById('selectedCount');
+
+function updateBulkActions() {
+  const checked = document.querySelectorAll('.product-checkbox:checked');
+  const count = checked.length;
+  
+  selectedCount.textContent = count;
+  bulkActions.style.display = count > 0 ? 'flex' : 'none';
+}
+
+if (selectAll) {
+  selectAll.addEventListener('change', function() {
+    const visibleCheckboxes = Array.from(checkboxes).filter(cb => 
+      !cb.closest('tr').classList.contains('hidden')
+    );
+    visibleCheckboxes.forEach(cb => cb.checked = this.checked);
+    updateBulkActions();
+  });
+}
+
+checkboxes.forEach(cb => cb.addEventListener('change', updateBulkActions));
+
+function clearSelection() {
+  checkboxes.forEach(cb => cb.checked = false);
+  if (selectAll) selectAll.checked = false;
+  updateBulkActions();
+}
+
+function getSelectedIds() {
+  return Array.from(document.querySelectorAll('.product-checkbox:checked')).map(cb => cb.value);
+}
+
+// Bulk actions
+function bulkSetStock(inStock) {
+  const ids = getSelectedIds();
+  if (ids.length === 0) return;
+  if (!confirm(`Mark ${ids.length} product(s) as ${inStock ? 'In Stock' : 'Out of Stock'}?`)) return;
+  alert('Bulk update feature - implement API endpoint');
+}
+
+function bulkSetFeatured(featured) {
+  const ids = getSelectedIds();
+  if (ids.length === 0) return;
+  if (!confirm(`${featured ? 'Feature' : 'Unfeature'} ${ids.length} product(s)?`)) return;
+  alert('Bulk update feature - implement API endpoint');
+}
+
+function bulkDelete() {
+  const ids = getSelectedIds();
+  if (ids.length === 0) return;
+  if (!confirm(`Delete ${ids.length} product(s)?\nThis action cannot be undone!`)) return;
+  alert('Bulk delete feature - implement API endpoint');
+}
+
+// Auto-hide alerts
+document.querySelectorAll('.alert').forEach(alert => {
+  setTimeout(() => {
+    alert.style.transition = 'opacity 0.3s';
+    alert.style.opacity = '0';
+    setTimeout(() => alert.remove(), 300);
+  }, 5000);
+});
+
+// Initialize counts
+updateCounts();
+</script>
+
+<%- include('partials/admin-footer') %>

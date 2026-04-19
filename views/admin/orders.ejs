@@ -1,0 +1,790 @@
+<%- include('partials/admin-header') %>
+
+<div class="admin-orders enterprise">
+  
+  <!-- Header -->
+  <div class="orders-header">
+    <div class="header-left">
+      <h2>Orders</h2>
+      <p class="header-subtitle">Manage and track customer orders</p>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar-enterprise">
+    <div class="search-wrapper">
+      <span class="search-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </span>
+      <input type="text" 
+             id="orderSearch" 
+             class="search-input" 
+             placeholder="Search by order ID or customer..." 
+             aria-label="Search orders">
+      <button class="clear-search" id="clearSearch" type="button" style="display: none;">×</button>
+    </div>
+    
+    <div class="filter-actions">
+      <select id="statusFilter" class="filter-select">
+        <option value="all">All Status</option>
+        <option value="Pending">Pending</option>
+        <option value="Processing">Processing</option>
+        <option value="Shipped">Shipped</option>
+        <option value="Delivered">Delivered</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+      
+      <button class="btn btn-outline" id="resetFilters">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+        </svg>
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Status Tabs -->
+  <div class="status-tabs">
+    <button class="status-tab active" data-status="all">
+      <span class="tab-label">All Orders</span>
+      <span class="tab-count"><%= orders.length %></span>
+    </button>
+    <button class="status-tab" data-status="Pending">
+      <span class="tab-label">Pending</span>
+      <span class="tab-count pending"><%= orders.filter(o => o.status === 'Pending').length %></span>
+    </button>
+    <button class="status-tab" data-status="Processing">
+      <span class="tab-label">Processing</span>
+      <span class="tab-count processing"><%= orders.filter(o => o.status === 'Processing').length %></span>
+    </button>
+    <button class="status-tab" data-status="Shipped">
+      <span class="tab-label">Shipped</span>
+      <span class="tab-count shipped"><%= orders.filter(o => o.status === 'Shipped').length %></span>
+    </button>
+    <button class="status-tab" data-status="Delivered">
+      <span class="tab-label">Delivered</span>
+      <span class="tab-count delivered"><%= orders.filter(o => o.status === 'Delivered').length %></span>
+    </button>
+    <button class="status-tab" data-status="Cancelled">
+      <span class="tab-label">Cancelled</span>
+      <span class="tab-count cancelled"><%= orders.filter(o => o.status === 'Cancelled').length %></span>
+    </button>
+  </div>
+  
+  <!-- Alerts -->
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="alert alert-success" role="alert">
+      <span class="alert-icon">✓</span>
+      <span class="alert-message"><%= success %></span>
+      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+  <% } %>
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-error" role="alert">
+      <span class="alert-icon">!</span>
+      <span class="alert-message"><%= error %></span>
+      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+  <% } %>
+  
+  <% if (orders && orders.length > 0) { %>
+    <div class="table-responsive">
+      <table class="enterprise-table" id="ordersTable">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% orders.forEach(order => { 
+            const statusClass = {
+              'Pending': 'warning',
+              'Processing': 'info',
+              'Shipped': 'info',
+              'Delivered': 'success',
+              'Cancelled': 'danger'
+            }[order.status] || 'default';
+          %>
+            <tr class="order-row" 
+                data-id="<%= order.orderId || order._id %>"
+                data-customer="<%= (order.customerName || '').toLowerCase() %>"
+                data-email="<%= (order.customerEmail || '').toLowerCase() %>"
+                data-status="<%= order.status || 'Pending' %>">
+              <td>
+                <strong class="order-id">#<%= order.orderId || order._id.toString().slice(-8) %></strong>
+              </td>
+              <td>
+                <div class="customer-cell">
+                  <span class="customer-name"><%= order.customerName || order.customer?.name || 'Guest' %></span>
+                  <span class="customer-email"><%= order.customerEmail || order.customer?.email || 'No email' %></span>
+                  <% if (order.customerPhone) { %>
+                    <span class="customer-phone"><%= order.customerPhone %></span>
+                  <% } %>
+                </div>
+              </td>
+              <td>
+                <span class="items-count"><%= order.items ? order.items.length : 0 %> items</span>
+              </td>
+              <td>
+                <strong class="order-total">₦<%= (order.total || 0).toLocaleString() %></strong>
+              </td>
+              <td>
+                <span class="payment-badge">Cash on Delivery</span>
+              </td>
+              <td>
+                <div class="status-selector">
+                  <form action="/admin/orders/<%= order._id %>/status" method="POST" class="status-form">
+                    <select name="status" onchange="this.form.submit()" class="status-select status-<%= statusClass %>">
+                      <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                      <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                      <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                      <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                      <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                    </select>
+                  </form>
+                </div>
+              </td>
+              <td>
+                <span class="order-date"><%= order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A' %></span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <a href="/admin/orders/<%= order._id %>" class="action-btn-icon" title="View Details">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </a>
+                  <button class="action-btn-icon" title="Print Invoice" onclick="printInvoice('<%= order._id %>')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                      <path d="M6 9V3h12v6"/>
+                      <rect x="6" y="15" width="12" height="6" rx="2"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Simple Stats Footer -->
+    <div class="order-stats-footer">
+      <span><strong><%= orders.length %></strong> total orders</span>
+      <span class="separator">•</span>
+      <span><strong>₦<%= orders.reduce((sum, o) => sum + (o.total || 0), 0).toLocaleString() %></strong> total revenue</span>
+    </div>
+    
+    <!-- Pagination -->
+    <% if (typeof pagination !== 'undefined' && pagination.pages > 1) { %>
+      <div class="pagination-enterprise">
+        <a href="?page=1" class="page-btn <%= pagination.page === 1 ? 'disabled' : '' %>">«</a>
+        <a href="?page=<%= Math.max(1, pagination.page - 1) %>" class="page-btn <%= pagination.page === 1 ? 'disabled' : '' %>">‹</a>
+        
+        <% for (var i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.pages, pagination.page + 2); i++) { %>
+          <a href="?page=<%= i %>" class="page-btn <%= i === pagination.page ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+        
+        <a href="?page=<%= Math.min(pagination.pages, pagination.page + 1) %>" class="page-btn <%= pagination.page === pagination.pages ? 'disabled' : '' %>">›</a>
+        <a href="?page=<%= pagination.pages %>" class="page-btn <%= pagination.page === pagination.pages ? 'disabled' : '' %>">»</a>
+      </div>
+    <% } %>
+    
+  <% } else { %>
+    <div class="empty-state-enterprise">
+      <div class="empty-illustration">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+      </div>
+      <h3>No Orders Yet</h3>
+      <p>When customers make purchases, they'll appear here.</p>
+    </div>
+  <% } %>
+</div>
+
+<style>
+/* Enterprise Orders Page */
+.enterprise {
+  padding: 0;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-left h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 0.25rem;
+}
+
+.header-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Filter Bar */
+.filter-bar-enterprise {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 350px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--olive);
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+}
+
+.clear-search {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.filter-select {
+  padding: 10px 32px 10px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+/* Status Tabs */
+.status-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border-lighter);
+  padding-bottom: 0.75rem;
+}
+
+.status-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.status-tab:hover {
+  background: var(--bg-gray);
+}
+
+.status-tab.active {
+  background: var(--olive);
+  color: white;
+}
+
+.tab-count {
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(0,0,0,0.06);
+}
+
+.status-tab.active .tab-count {
+  background: rgba(255,255,255,0.2);
+}
+
+/* Alerts */
+.alert {
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.alert-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.alert-icon {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.alert-message {
+  flex: 1;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+/* Table */
+.table-responsive {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-lighter);
+  background: white;
+}
+
+.enterprise-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.enterprise-table th {
+  text-align: left;
+  padding: 14px 16px;
+  background: var(--bg-gray);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-light);
+  white-space: nowrap;
+}
+
+.enterprise-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-lighter);
+  vertical-align: middle;
+}
+
+.enterprise-table tbody tr:hover {
+  background: var(--bg-gray);
+}
+
+.order-row.hidden {
+  display: none;
+}
+
+.order-id {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--olive);
+}
+
+.customer-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.customer-name {
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.customer-email {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.customer-phone {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.items-count {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.order-total {
+  font-weight: 600;
+  color: var(--olive);
+}
+
+.payment-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--bg-gray);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Status Select */
+.status-selector {
+  display: inline-block;
+}
+
+.status-form {
+  margin: 0;
+}
+
+.status-select {
+  padding: 6px 28px 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='currentColor' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.status-select.status-warning { background-color: #FEF3C7; color: #D97706; }
+.status-select.status-info { background-color: #DBEAFE; color: #2563EB; }
+.status-select.status-success { background-color: #D1FAE5; color: #2D6A4F; }
+.status-select.status-danger { background-color: #FEE2E2; color: #DC2626; }
+.status-select.status-default { background-color: var(--bg-gray); color: var(--text-muted); }
+
+.order-date {
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.action-btn-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-gray);
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.action-btn-icon:hover {
+  background: var(--olive);
+  color: white;
+}
+
+/* Simple Stats Footer */
+.order-stats-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.order-stats-footer .separator {
+  color: var(--border-light);
+}
+
+/* Pagination */
+.pagination-enterprise {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 1rem;
+}
+
+.page-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  background: white;
+  border: 1px solid var(--border-lighter);
+  border-radius: 8px;
+  color: var(--text-dark);
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.page-btn:hover:not(.disabled) {
+  background: var(--bg-gray);
+  border-color: var(--olive);
+}
+
+.page-btn.active {
+  background: var(--olive);
+  border-color: var(--olive);
+  color: white;
+}
+
+.page-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Empty State */
+.empty-state-enterprise {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid var(--border-lighter);
+}
+
+.empty-illustration {
+  color: var(--border-light);
+  margin-bottom: 1rem;
+}
+
+.empty-state-enterprise h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-dark);
+}
+
+.empty-state-enterprise p {
+  color: var(--text-muted);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .filter-bar-enterprise {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-wrapper {
+    max-width: none;
+  }
+  
+  .status-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+  }
+  
+  .enterprise-table th:nth-child(3),
+  .enterprise-table td:nth-child(3),
+  .enterprise-table th:nth-child(5),
+  .enterprise-table td:nth-child(5) {
+    display: none;
+  }
+}
+</style>
+
+<script>
+// Search functionality
+const searchInput = document.getElementById('orderSearch');
+const clearSearch = document.getElementById('clearSearch');
+
+if (searchInput) {
+  searchInput.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('.order-row');
+    
+    clearSearch.style.display = searchTerm ? 'block' : 'none';
+    
+    rows.forEach(row => {
+      const orderId = (row.dataset.id || '').toLowerCase();
+      const customer = (row.dataset.customer || '').toLowerCase();
+      const email = (row.dataset.email || '').toLowerCase();
+      
+      if (orderId.includes(searchTerm) || customer.includes(searchTerm) || email.includes(searchTerm)) {
+        row.classList.remove('hidden');
+      } else {
+        row.classList.add('hidden');
+      }
+    });
+    
+    updateVisibleCounts();
+  });
+  
+  clearSearch.addEventListener('click', function() {
+    searchInput.value = '';
+    this.style.display = 'none';
+    document.querySelectorAll('.order-row').forEach(row => row.classList.remove('hidden'));
+    updateVisibleCounts();
+  });
+}
+
+// Status filter
+const statusFilter = document.getElementById('statusFilter');
+if (statusFilter) {
+  statusFilter.addEventListener('change', function() {
+    const status = this.value;
+    const rows = document.querySelectorAll('.order-row');
+    
+    rows.forEach(row => {
+      if (status === 'all' || row.dataset.status === status) {
+        row.classList.remove('hidden');
+      } else {
+        row.classList.add('hidden');
+      }
+    });
+    
+    document.querySelectorAll('.status-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.status === status);
+    });
+    
+    updateVisibleCounts();
+  });
+}
+
+// Status tabs
+document.querySelectorAll('.status-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    const status = this.dataset.status;
+    
+    document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    
+    if (statusFilter) {
+      statusFilter.value = status;
+    }
+    
+    const rows = document.querySelectorAll('.order-row');
+    rows.forEach(row => {
+      if (status === 'all' || row.dataset.status === status) {
+        row.classList.remove('hidden');
+      } else {
+        row.classList.add('hidden');
+      }
+    });
+    
+    updateVisibleCounts();
+  });
+});
+
+// Reset filters
+document.getElementById('resetFilters')?.addEventListener('click', function() {
+  if (searchInput) {
+    searchInput.value = '';
+    clearSearch.style.display = 'none';
+  }
+  if (statusFilter) statusFilter.value = 'all';
+  
+  document.querySelectorAll('.order-row').forEach(row => row.classList.remove('hidden'));
+  document.querySelectorAll('.status-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.status === 'all');
+  });
+  
+  updateVisibleCounts();
+});
+
+// Update visible counts in tabs
+function updateVisibleCounts() {
+  const visibleRows = Array.from(document.querySelectorAll('.order-row')).filter(r => !r.classList.contains('hidden'));
+  
+  document.querySelectorAll('.status-tab').forEach(tab => {
+    const status = tab.dataset.status;
+    const countSpan = tab.querySelector('.tab-count');
+    
+    if (status === 'all') {
+      countSpan.textContent = visibleRows.length;
+    } else {
+      countSpan.textContent = visibleRows.filter(r => r.dataset.status === status).length;
+    }
+  });
+}
+
+// Print invoice (placeholder)
+function printInvoice(orderId) {
+  alert('Print invoice for order: ' + orderId);
+}
+
+// Auto-hide alerts
+document.querySelectorAll('.alert').forEach(alert => {
+  setTimeout(() => {
+    alert.style.transition = 'opacity 0.3s';
+    alert.style.opacity = '0';
+    setTimeout(() => alert.remove(), 300);
+  }, 5000);
+});
+
+// Initialize counts
+updateVisibleCounts();
+</script>
+
+<%- include('partials/admin-footer') %>

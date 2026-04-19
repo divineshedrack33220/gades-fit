@@ -1,0 +1,226 @@
+<%- include('../partials/header') %>
+
+<!-- Breadcrumb -->
+<section class="breadcrumb">
+  <div class="container">
+    <nav class="breadcrumb-nav">
+      <a href="/">Home</a>
+      <span>/</span>
+      <a href="/products">Shop</a>
+      <span>/</span>
+      <span class="current"><%= product.name %></span>
+    </nav>
+  </div>
+</section>
+
+<!-- Product Detail - DYNAMIC -->
+<section class="product-detail">
+  <div class="container">
+    <div class="product-detail-grid">
+      
+      <!-- Product Images -->
+      <div class="product-images">
+        <div class="main-image">
+          <% if (product.imageUrl) { %>
+            <img src="<%= product.imageUrl %>" alt="<%= product.name %>" id="mainProductImage">
+          <% } else { %>
+            <div class="placeholder-main">📷 No Image</div>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- Product Info -->
+      <div class="product-info-detail">
+        <% if (product.featured) { %>
+          <span class="product-badge-detail">Featured</span>
+        <% } %>
+        <h1 class="product-title-detail"><%= product.name %></h1>
+        <p class="product-price-detail">₦<%= typeof product.price === 'number' ? product.price.toLocaleString() : product.price %></p>
+        
+        <!-- Comfy Rating -->
+        <div class="comfy-rating">
+          <span class="rating-label">Comfy Rating:</span>
+          <div class="rating-stars">
+            <% var rating = product.comfyRating || 5; %>
+            <% for (var i = 1; i <= 5; i++) { %>
+              <span class="star<%= i <= rating ? ' filled' : '' %>">★</span>
+            <% } %>
+          </div>
+          <span class="rating-text"><%= rating %>/5 - Cloud-like comfort</span>
+        </div>
+        
+        <p class="product-description">
+          <%= product.description || 'No description available.' %>
+        </p>
+        
+        <!-- Color Selection -->
+        <% if (product.colors && product.colors.length > 0) { %>
+          <div class="product-option">
+            <label>Color: <span id="selectedColor"><%= product.colors[0] %></span></label>
+            <div class="color-options">
+              <% product.colors.forEach(function(color, index) { %>
+                <div class="color-option<%= index === 0 ? ' active' : '' %>" 
+                     style="background: <%= color.toLowerCase() %>;" 
+                     data-color="<%= color %>" 
+                     onclick="selectColor(this)"></div>
+              <% }); %>
+            </div>
+          </div>
+        <% } %>
+        
+        <!-- Size Selection -->
+        <% if (product.sizes && product.sizes.length > 0) { %>
+          <div class="product-option">
+            <label>Size:</label>
+            <div class="size-options">
+              <% product.sizes.forEach(function(size, index) { %>
+                <button class="size-option<%= index === 0 ? ' active' : '' %>" onclick="selectSize(this)"><%= size %></button>
+              <% }); %>
+            </div>
+          </div>
+        <% } %>
+        
+        <!-- Stock Status -->
+        <div class="stock-status">
+          <% if (product.inStock !== false) { %>
+            <span class="in-stock">✓ In Stock</span>
+          <% } else { %>
+            <span class="out-of-stock">✗ Out of Stock</span>
+          <% } %>
+        </div>
+        
+        <!-- Quantity -->
+        <div class="product-option">
+          <label>Quantity:</label>
+          <div class="quantity-selector">
+            <button class="qty-btn" onclick="decrementQty()">−</button>
+            <input type="number" id="quantity" value="1" min="1" max="10" readonly>
+            <button class="qty-btn" onclick="incrementQty()">+</button>
+          </div>
+        </div>
+        
+        <!-- Add to Cart -->
+        <div class="product-actions">
+          <button class="btn btn-primary btn-large" onclick="addToCart('<%= product._id %>', '<%= product.name %>', <%= product.price %>)">Add to Cart</button>
+          <button class="btn btn-outline btn-wishlist" onclick="addToWishlist()">♡</button>
+        </div>
+        
+        <!-- Product Meta -->
+        <div class="product-meta">
+          <p><strong>Category:</strong> <a href="/products?cat=<%= product.category %>"><%= product.category || 'Uncategorized' %></a></p>
+          <% if (product.tags && product.tags.length > 0) { %>
+            <p><strong>Tags:</strong> <%= product.tags.join(', ') %></p>
+          <% } %>
+        </div>
+        
+        <!-- Shipping Info -->
+        <div class="shipping-info">
+          <div class="info-item"><span>🚚</span><p>Free shipping over ₦50,000</p></div>
+          <div class="info-item"><span>🔄</span><p>7-day easy returns</p></div>
+          <div class="info-item"><span>🧵</span><p>Handmade in Lagos</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Related Products -->
+<% if (relatedProducts && relatedProducts.length > 0) { %>
+  <section class="you-may-like">
+    <div class="container">
+      <h2 class="section-title">You May <span class="accent-text">Also Like</span></h2>
+      <div class="products-grid">
+        <% relatedProducts.forEach(function(relProduct) { %>
+          <div class="product-card">
+            <a href="/product/<%= relProduct._id %>">
+              <div class="product-image">
+                <% if (relProduct.imageUrl) { %>
+                  <img src="<%= relProduct.imageUrl %>" alt="<%= relProduct.name %>">
+                <% } else { %>
+                  <div class="placeholder-image">📷</div>
+                <% } %>
+                <span class="product-tag"><%= relProduct.category %></span>
+              </div>
+              <h4><%= relProduct.name %></h4>
+              <p class="product-price">₦<%= typeof relProduct.price === 'number' ? relProduct.price.toLocaleString() : relProduct.price %></p>
+            </a>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+<% } %>
+
+<style>
+.placeholder-main, .placeholder-image {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-light);
+  font-size: 3rem;
+  color: var(--text-muted);
+}
+.placeholder-image {
+  min-height: auto;
+  font-size: 2rem;
+}
+.stock-status {
+  margin: 1rem 0;
+}
+.in-stock {
+  color: #2D6A4F;
+  font-weight: 500;
+}
+.out-of-stock {
+  color: #D93838;
+  font-weight: 500;
+}
+.star {
+  color: #ddd;
+  font-size: 1.2rem;
+}
+.star.filled {
+  color: #FFB800;
+}
+.product-card a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+</style>
+
+<script>
+function selectColor(element) {
+  document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+  element.classList.add('active');
+  document.getElementById('selectedColor').textContent = element.dataset.color;
+}
+
+function selectSize(element) {
+  document.querySelectorAll('.size-option').forEach(opt => opt.classList.remove('active'));
+  element.classList.add('active');
+}
+
+function incrementQty() {
+  var qty = document.getElementById('quantity');
+  if (qty.value < 10) qty.value = parseInt(qty.value) + 1;
+}
+
+function decrementQty() {
+  var qty = document.getElementById('quantity');
+  if (qty.value > 1) qty.value = parseInt(qty.value) - 1;
+}
+
+function addToCart(id, name, price) {
+  alert('✨ ' + name + ' has been added to your cart!');
+}
+
+function addToWishlist() {
+  alert('♡ Added to your wishlist!');
+}
+</script>
+
+<%- include('../partials/footer') %>

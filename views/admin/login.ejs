@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Admin Login - GaDes fit</title>
+  <link rel="stylesheet" href="/css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    .admin-login-body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1e4a37 0%, #2D6A4F 50%, #6B1A2A 100%);
+      font-family: 'Montserrat', sans-serif;
+      padding: 16px;
+    }
+    
+    .login-container {
+      width: 100%;
+      max-width: 380px;
+    }
+    
+    .login-box {
+      background: rgba(255, 255, 255, 0.98);
+      padding: 28px 20px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .login-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .login-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 600;
+      color: #2D6A4F;
+      line-height: 1;
+    }
+    
+    .login-header span {
+      color: #6B1A2A;
+      font-weight: 300;
+    }
+    
+    .login-header p {
+      color: #6B7280;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-top: 4px;
+    }
+    
+    .alert {
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+      background: #FEF2F2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+      animation: shake 0.3s ease;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+    
+    .alert-icon {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #4B5563;
+    }
+    
+    .input-wrapper {
+      position: relative;
+    }
+    
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9CA3AF;
+      display: flex;
+      align-items: center;
+    }
+    
+    .login-form input {
+      width: 100%;
+      padding: 12px 14px 12px 44px;
+      border: 2px solid #E5E7EB;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-family: 'Montserrat', sans-serif;
+      background: white;
+      transition: all 0.15s;
+    }
+    
+    .login-form input:focus {
+      outline: none;
+      border-color: #2D6A4F;
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+    }
+    
+    .login-form input::placeholder {
+      color: #9CA3AF;
+      font-size: 0.8rem;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #9CA3AF;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #2D6A4F 0%, #1e4a37 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+      box-shadow: 0 4px 12px rgba(45, 106, 79, 0.25);
+      transition: all 0.15s;
+    }
+    
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(45, 106, 79, 0.35);
+    }
+    
+    .login-footer {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+    }
+    
+    .login-footer a {
+      color: #6B7280;
+      text-decoration: none;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .login-hint {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 0.65rem;
+      color: #9CA3AF;
+      padding: 8px;
+      background: #F9FAFB;
+      border-radius: 8px;
+      font-family: monospace;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body class="admin-login-body">
+  <div class="login-container">
+    <div class="login-box">
+      <div class="login-header">
+        <h1>GaDes <span>fit</span></h1>
+        <p>Admin Portal</p>
+      </div>
+      
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert" role="alert">
+          <span class="alert-icon">!</span>
+          <span><%= error %></span>
+        </div>
+      <% } %>
+      
+      <form action="/admin/login" method="POST" class="login-form">
+        <div class="form-group">
+          <label>Email</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </span>
+            <input type="email" name="email" placeholder="abigail@gadesfit.com" required autofocus>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <input type="password" name="password" id="password" placeholder="••••••••" required>
+            <button type="button" class="password-toggle" onclick="togglePassword()" title="Show">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eyeIcon">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn">Sign In</button>
+      </form>
+      
+      <div class="login-footer">
+        <a href="/">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          Back to Site
+        </a>
+      </div>
+      
+      <p class="login-hint">abigail@gadesfit.com / GadesFit2024!</p>
+    </div>
+  </div>
+  
+  <script>
+    function togglePassword() {
+      const pwd = document.getElementById('password');
+      const eye = document.getElementById('eyeIcon');
+      if (pwd.type === 'password') {
+        pwd.type = 'text';
+        eye.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+      } else {
+        pwd.type = 'password';
+        eye.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+      }
+    }
+  </script>
+</body>
+</html>

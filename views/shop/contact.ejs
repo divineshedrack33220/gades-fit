@@ -1,0 +1,394 @@
+<%- include('../partials/header') %>
+
+<%
+// Safety checks - ensure settings exists with fallbacks
+var contact = (settings && settings.contact) ? settings.contact : {};
+var studio = contact.studio || {};
+var phone = contact.phone || {};
+var email = contact.email || {};
+var social = contact.social || {};
+var about = (settings && settings.about) ? settings.about : {};
+var founderName = about.founderName || 'Abigail Sam';
+
+// Get success/error messages (passed from controller)
+var successMessage = typeof success !== 'undefined' && success ? success : '';
+var errorMessage = typeof error !== 'undefined' && error ? error : '';
+
+// Studio info
+var studioAddress = studio.address || '123 Fashion Avenue, Lekki Phase 1, Lagos, Nigeria';
+var studioNote = studio.note || 'By appointment only';
+var studioShort = studio.address ? studio.address.split(',')[0] : 'Lekki Phase 1, Lagos, Nigeria';
+
+// Phone info
+var phonePrimary = phone.primary || '+234 123 456 7890';
+var phoneSecondary = phone.secondary || '+234 987 654 3210';
+var phoneHours = phone.hours || 'Mon - Fri, 9am - 6pm WAT';
+
+// Email info
+var emailPrimary = email.primary || 'hello@gadesfit.com';
+var emailWholesale = email.wholesale || 'wholesale@gadesfit.com';
+var emailResponse = email.response || 'We reply within 24 hours';
+
+// Social links
+var instagramLink = social.instagram || '#';
+var facebookLink = social.facebook || '#';
+var pinterestLink = social.pinterest || '#';
+%>
+
+<!-- Contact Hero -->
+<section class="page-hero">
+  <div class="container">
+    <h1 class="page-title">Get in <span class="accent-text">Touch</span></h1>
+    <p class="page-subtitle">We'd love to hear from you. Questions, collaborations, or just want to say hi?</p>
+  </div>
+</section>
+
+<!-- Contact Section -->
+<section class="contact">
+  <div class="container">
+    <div class="contact-grid">
+      
+      <!-- Contact Form -->
+      <div class="contact-form">
+        <h3>Send us a message</h3>
+        
+        <form action="/contact" method="POST" id="contactForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" name="name" id="contactName" placeholder="<%= founderName %>" required>
+            </div>
+            <div class="form-group">
+              <label>Email Address *</label>
+              <input type="email" name="email" id="contactEmail" placeholder="<%= emailPrimary %>" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Subject *</label>
+            <select name="subject" id="contactSubject" required>
+              <option value="">Select a topic</option>
+              <option value="order">Order Inquiry</option>
+              <option value="custom">Custom Order Request</option>
+              <option value="collaboration">Collaboration</option>
+              <option value="wholesale">Wholesale Inquiry</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Message *</label>
+            <textarea name="message" id="contactMessage" rows="5" placeholder="Tell us more about what you need..." required></textarea>
+          </div>
+          
+          <button type="submit" class="btn btn-primary btn-full" id="contactSubmitBtn">Send Message</button>
+          <p class="form-note">We'll get back to you within 24-48 hours.</p>
+        </form>
+      </div>
+      
+      <!-- Contact Info - Dynamic -->
+      <div class="contact-info">
+        <div class="info-card">
+          <span class="info-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </span>
+          <h4>Visit Our Studio</h4>
+          <p><%- studioAddress.replace(/, /g, '<br>') %></p>
+          <span class="info-note"><%= studioNote %></span>
+        </div>
+        
+        <div class="info-card">
+          <span class="info-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8 10a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.574 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </span>
+          <h4>Call or WhatsApp</h4>
+          <p><%= phonePrimary %></p>
+          <p><%= phoneSecondary %></p>
+          <span class="info-note"><%= phoneHours %></span>
+        </div>
+        
+        <div class="info-card">
+          <span class="info-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </span>
+          <h4>Email Us</h4>
+          <p><%= emailPrimary %></p>
+          <p><%= emailWholesale %></p>
+          <span class="info-note"><%= emailResponse %></span>
+        </div>
+        
+        <div class="info-card social">
+          <span class="info-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+            </svg>
+          </span>
+          <h4>Follow Us</h4>
+          <div class="social-links">
+            <a href="<%= instagramLink %>" target="_blank">Instagram</a>
+            <a href="<%= facebookLink %>" target="_blank">Facebook</a>
+            <a href="<%= pinterestLink %>" target="_blank">Pinterest</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Map Placeholder -->
+<section class="map">
+  <div class="container">
+    <div class="map-placeholder">
+      <div class="map-content">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        <span>GaDes fit Studio</span>
+        <p><%= studioShort %></p>
+        <a href="#">Get Directions →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Quick Links -->
+<section class="faq">
+  <div class="container">
+    <div class="faq-grid">
+      <div class="faq-card">
+        <h4>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 7v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+          Shipping Information
+        </h4>
+        <p>Free shipping on orders over ₦50,000. Delivery within 3-5 business days.</p>
+      </div>
+      <div class="faq-card">
+        <h4>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M23 4v6h-6"/>
+            <path d="M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+          Returns & Exchanges
+        </h4>
+        <p>Not satisfied? Return within 7 days for a full refund or exchange.</p>
+      </div>
+      <div class="faq-card">
+        <h4>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          Custom Orders
+        </h4>
+        <p>Need a specific size or color? We offer custom orders on select items.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.contact-form .form-group {
+  margin-bottom: 1.2rem;
+}
+
+.contact-form label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+
+.contact-form input,
+.contact-form select,
+.contact-form textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--border-light);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.contact-form input:focus,
+.contact-form select:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: var(--olive);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-note {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.info-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-icon {
+  color: var(--olive);
+  margin-bottom: 0.5rem;
+}
+
+.info-card h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-dark);
+  margin-bottom: 0.75rem;
+}
+
+.faq-card h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--olive);
+  margin-bottom: 0.5rem;
+}
+
+.faq-card svg {
+  color: var(--burgundy);
+}
+
+.map-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.map-content svg {
+  color: var(--burgundy);
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<script>
+// =============================================
+// TOAST SYSTEM (3-Second Auto-hide)
+// =============================================
+(function() {
+  'use strict';
+  
+  const Toast = {
+    container: null,
+    
+    init() {
+      if (this.container) return;
+      this.container = document.createElement('div');
+      this.container.className = 'toast-container';
+      document.body.appendChild(this.container);
+    },
+    
+    show(message, type = 'success') {
+      this.init();
+      const icons = { success: '✓', error: '✕', warning: '!', info: 'i' };
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || '✓'}</span>
+        <div class="toast-content">
+          <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close">✕</button>
+        <div class="toast-progress"></div>
+      `;
+      this.container.appendChild(toast);
+      toast.querySelector('.toast-close').addEventListener('click', () => this.remove(toast));
+      const timeout = setTimeout(() => this.remove(toast), 3000);
+      toast.dataset.timeout = timeout;
+    },
+    
+    remove(toast) {
+      clearTimeout(parseInt(toast.dataset.timeout));
+      toast.style.animation = 'slideInToast 0.3s ease reverse';
+      setTimeout(() => toast.remove(), 300);
+    }
+  };
+  
+  window.Toast = Toast;
+  
+  // Show messages from server
+  <% if (successMessage) { %>
+    setTimeout(() => Toast.show('<%= successMessage %>', 'success'), 100);
+  <% } %>
+  <% if (errorMessage) { %>
+    setTimeout(() => Toast.show('<%= errorMessage %>', 'error'), 100);
+  <% } %>
+})();
+
+// =============================================
+// FORM VALIDATION
+// =============================================
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+  const name = document.getElementById('contactName').value.trim();
+  const email = document.getElementById('contactEmail').value.trim();
+  const subject = document.getElementById('contactSubject').value;
+  const message = document.getElementById('contactMessage').value.trim();
+  
+  if (!name || name.length < 2) {
+    e.preventDefault();
+    window.Toast.show('Please enter your full name (at least 2 characters)', 'error');
+    return;
+  }
+  
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    e.preventDefault();
+    window.Toast.show('Please enter a valid email address', 'error');
+    return;
+  }
+  
+  if (!subject) {
+    e.preventDefault();
+    window.Toast.show('Please select a subject', 'error');
+    return;
+  }
+  
+  if (!message || message.length < 10) {
+    e.preventDefault();
+    window.Toast.show('Message must be at least 10 characters', 'error');
+    return;
+  }
+  
+  // Show loading state
+  const btn = document.getElementById('contactSubmitBtn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = 'Send Message';
+    btn.disabled = false;
+  }, 3000);
+});
+</script>
+
+<%- include('../partials/footer') %>

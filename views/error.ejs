@@ -1,0 +1,44 @@
+<!-- views/error.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error - GaDes fit</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <div class="logo">
+        <a href="/">GaDes <span class="logo-light">fit</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="container" style="padding: 8rem 0; text-align: center; min-height: 60vh;">
+      <h1 style="font-size: 5rem; color: var(--burgundy); margin-bottom: 1rem;">
+        <%= error.status || 500 %>
+      </h1>
+      <h2 style="font-size: 2rem; margin-bottom: 1rem; color: var(--text-dark);">
+        Oops! Something went wrong
+      </h2>
+      <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 2rem;">
+        <%= error.message || 'An unexpected error occurred. Please try again later.' %>
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="/" class="btn btn-primary">Go Home</a>
+        <a href="javascript:history.back()" class="btn btn-outline">Go Back</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-bottom">
+      <p>&copy; 2025 GaDes fit. Handmade with comfort & style.</p>
+    </div>
+  </footer>
+</body>
+</html>

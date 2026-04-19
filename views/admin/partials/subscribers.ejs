@@ -1,0 +1,53 @@
+<%- include('partials/admin-header') %>
+
+<div class="admin-subscribers">
+  <div class="page-header">
+    <h2>Newsletter Subscribers</h2>
+  </div>
+  
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="alert alert-success"><%= success %></div>
+  <% } %>
+  
+  <% if (subscribers && subscribers.length > 0) { %>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Subscribed Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% subscribers.forEach(function(sub) { %>
+          <tr>
+            <td><%= sub.email %></td>
+            <td><%= sub.subscribedAt ? new Date(sub.subscribedAt).toLocaleDateString() : 'N/A' %></td>
+            <td>
+              <% if (sub.active) { %>
+                <span class="badge badge-success">Active</span>
+              <% } else { %>
+                <span class="badge badge-danger">Inactive</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (sub.active) { %>
+                <form action="/admin/subscribers/delete/<%= sub.email %>" method="POST" style="display: inline;">
+                  <button type="submit" class="btn-icon" onclick="return confirm('Unsubscribe <%= sub.email %>?')">🗑️</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+    <p><strong><%= subscribers.length %></strong> total subscribers</p>
+  <% } else { %>
+    <div class="empty-state">
+      <p>📧 No subscribers yet.</p>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/admin-footer') %>

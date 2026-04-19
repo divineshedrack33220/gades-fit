@@ -1,0 +1,1167 @@
+<%- include('partials/admin-header') %>
+
+<div class="admin-dashboard enterprise">
+  
+  <!-- Header with Date Range Picker -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <h2>Dashboard</h2>
+      <p class="welcome-message">Welcome back, Abigail!</p>
+    </div>
+    <div class="header-right">
+      <div class="date-range">
+        <button class="date-btn active">Today</button>
+        <button class="date-btn">Week</button>
+        <button class="date-btn">Month</button>
+        <button class="date-btn">Year</button>
+        <button class="date-btn">Custom</button>
+      </div>
+      <div class="refresh-btn" onclick="location.reload()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 4v6h-6"/>
+          <path d="M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        Refresh
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Cards Row -->
+  <div class="kpi-grid">
+    <div class="kpi-card primary">
+      <div class="kpi-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M20 7v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7"/>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Total Products</span>
+        <h3 class="kpi-value"><%= stats.products %></h3>
+        <span class="kpi-trend positive">↑ 12% vs last month</span>
+      </div>
+    </div>
+    
+    <div class="kpi-card success">
+      <div class="kpi-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <circle cx="9" cy="21" r="1"/>
+          <circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Total Orders</span>
+        <h3 class="kpi-value"><%= stats.orders %></h3>
+        <span class="kpi-trend positive">↑ 8% vs last month</span>
+      </div>
+    </div>
+    
+    <div class="kpi-card warning">
+      <div class="kpi-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Pending Orders</span>
+        <h3 class="kpi-value"><%= stats.pending %></h3>
+        <span class="kpi-trend neutral">Requires attention</span>
+      </div>
+    </div>
+    
+    <div class="kpi-card info">
+      <div class="kpi-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Total Revenue</span>
+        <h3 class="kpi-value"><%= stats.revenue %></h3>
+        <span class="kpi-trend positive">↑ 15% vs last month</span>
+      </div>
+    </div>
+    
+    <div class="kpi-card dark">
+      <div class="kpi-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Subscribers</span>
+        <h3 class="kpi-value"><%= stats.subscribers || 0 %></h3>
+        <span class="kpi-trend positive">↑ 5% vs last month</span>
+      </div>
+    </div>
+    
+    <div class="kpi-card accent">
+      <div class="kpi-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Messages</span>
+        <h3 class="kpi-value"><%= stats.messages || 0 %></h3>
+        <span class="kpi-trend">Unread: <%= stats.unreadMessages || 0 %></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="charts-grid">
+    <div class="chart-card large">
+      <div class="chart-header">
+        <h3>Revenue Overview</h3>
+        <div class="chart-actions">
+          <select class="chart-select">
+            <option>Daily</option>
+            <option>Weekly</option>
+            <option selected>Monthly</option>
+          </select>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Order Distribution</h3>
+      </div>
+      <div class="chart-container">
+        <canvas id="orderDistributionChart"></canvas>
+      </div>
+      <div class="chart-legend" id="orderLegend"></div>
+    </div>
+  </div>
+
+  <!-- Analytics Row -->
+  <div class="analytics-grid">
+    <div class="analytics-card">
+      <div class="analytics-header">
+        <h3>Top Selling Products</h3>
+        <a href="/admin/products" class="view-link">View All →</a>
+      </div>
+      <div class="analytics-content">
+        <div class="top-product-item">
+          <div class="product-rank">1</div>
+          <div class="product-info">
+            <h4>Olive Blazer</h4>
+            <p>₦45,000 • 24 sold</p>
+          </div>
+          <div class="product-trend positive">↑ 32%</div>
+        </div>
+        <div class="top-product-item">
+          <div class="product-rank">2</div>
+          <div class="product-info">
+            <h4>Butter Knit Set</h4>
+            <p>₦38,500 • 18 sold</p>
+          </div>
+          <div class="product-trend positive">↑ 15%</div>
+        </div>
+        <div class="top-product-item">
+          <div class="product-rank">3</div>
+          <div class="product-info">
+            <h4>Burgundy Maxi</h4>
+            <p>₦52,000 • 15 sold</p>
+          </div>
+          <div class="product-trend positive">↑ 8%</div>
+        </div>
+        <div class="top-product-item">
+          <div class="product-rank">4</div>
+          <div class="product-info">
+            <h4>Sage Linen Co-ord</h4>
+            <p>₦38,500 • 12 sold</p>
+          </div>
+          <div class="product-trend neutral">→ 0%</div>
+        </div>
+        <div class="top-product-item">
+          <div class="product-rank">5</div>
+          <div class="product-info">
+            <h4>Cloud Nine Lounge</h4>
+            <p>₦35,000 • 10 sold</p>
+          </div>
+          <div class="product-trend negative">↓ 5%</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="analytics-card">
+      <div class="analytics-header">
+        <h3>Recent Activity</h3>
+      </div>
+      <div class="activity-timeline">
+        <div class="activity-item">
+          <div class="activity-icon order">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+          </div>
+          <div class="activity-content">
+            <p><strong>New Order #GDF12345</strong></p>
+            <span>₦85,000 • 5 mins ago</span>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon subscriber">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <div class="activity-content">
+            <p><strong>New Subscriber</strong></p>
+            <span>customer@email.com • 15 mins ago</span>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon message">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <div class="activity-content">
+            <p><strong>New Contact Message</strong></p>
+            <span>From: Divine • 1 hour ago</span>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon order">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+          </div>
+          <div class="activity-content">
+            <p><strong>Order #GDF12344 Shipped</strong></p>
+            <span>₦45,000 • 2 hours ago</span>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon product">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 7v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7"/>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+            </svg>
+          </div>
+          <div class="activity-content">
+            <p><strong>Product Updated</strong></p>
+            <span>Olive Blazer • 3 hours ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Status & Quick Actions Row -->
+  <div class="bottom-grid">
+    <div class="bottom-card">
+      <div class="card-header">
+        <h3>Order Status Breakdown</h3>
+      </div>
+      <div class="status-breakdown">
+        <div class="status-item pending">
+          <div class="status-bar" style="width: <%= (stats.pending / (stats.orders || 1)) * 100 %>%;"></div>
+          <span class="status-label">Pending</span>
+          <span class="status-count"><%= stats.pending %></span>
+        </div>
+        <div class="status-item processing">
+          <div class="status-bar" style="width: <%= (stats.processing / (stats.orders || 1)) * 100 %>%;"></div>
+          <span class="status-label">Processing</span>
+          <span class="status-count"><%= stats.processing %></span>
+        </div>
+        <div class="status-item shipped">
+          <div class="status-bar" style="width: <%= (stats.shipped / (stats.orders || 1)) * 100 %>%;"></div>
+          <span class="status-label">Shipped</span>
+          <span class="status-count"><%= stats.shipped %></span>
+        </div>
+        <div class="status-item delivered">
+          <div class="status-bar" style="width: <%= (stats.delivered / (stats.orders || 1)) * 100 %>%;"></div>
+          <span class="status-label">Delivered</span>
+          <span class="status-count"><%= stats.delivered %></span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bottom-card">
+      <div class="card-header">
+        <h3>Quick Actions</h3>
+      </div>
+      <div class="quick-actions-grid">
+        <a href="/admin/products/add" class="quick-action-card">
+          <span class="qa-icon">+</span>
+          <span class="qa-label">Add Product</span>
+        </a>
+        <a href="/admin/products" class="quick-action-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 7v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+          <span class="qa-label">Products</span>
+        </a>
+        <a href="/admin/orders" class="quick-action-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          <span class="qa-label">Orders</span>
+        </a>
+        <a href="/admin/contacts" class="quick-action-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span class="qa-label">Messages</span>
+        </a>
+        <a href="/admin/subscribers" class="quick-action-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <span class="qa-label">Subscribers</span>
+        </a>
+        <a href="/admin/settings" class="quick-action-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span class="qa-label">Settings</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Orders Table -->
+  <div class="table-card full-width">
+    <div class="table-header">
+      <h3>Recent Orders</h3>
+      <a href="/admin/orders" class="view-link">View All Orders →</a>
+    </div>
+    
+    <% if (recentOrders && recentOrders.length > 0) { %>
+      <div class="table-responsive">
+        <table class="enterprise-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recentOrders.forEach(order => { %>
+              <tr>
+                <td><strong><%= order.orderId || order._id.toString().slice(-8) %></strong></td>
+                <td>
+                  <div class="customer-cell">
+                    <span class="customer-name"><%= order.customerName || 'Guest' %></span>
+                    <span class="customer-email"><%= order.customerEmail || '' %></span>
+                  </div>
+                </td>
+                <td><%= order.items ? order.items.length : 0 %> items</td>
+                <td><strong>₦<%= (order.total || 0).toLocaleString() %></strong></td>
+                <td>
+                  <% if (order.status === 'Delivered') { %>
+                    <span class="status-badge success">Delivered</span>
+                  <% } else if (order.status === 'Processing') { %>
+                    <span class="status-badge warning">Processing</span>
+                  <% } else if (order.status === 'Shipped') { %>
+                    <span class="status-badge info">Shipped</span>
+                  <% } else if (order.status === 'Pending') { %>
+                    <span class="status-badge danger">Pending</span>
+                  <% } else { %>
+                    <span class="status-badge"><%= order.status %></span>
+                  <% } %>
+                </td>
+                <td><%= order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A' %></td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="/admin/orders/<%= order._id %>" class="action-btn-icon" title="View">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </a>
+                    <button class="action-btn-icon" title="Edit">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/>
+                      </svg>
+                    </button>
+                    <button class="action-btn-icon" title="More">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+        </div>
+        <h4>No orders yet</h4>
+        <p>When customers place orders, they'll appear here.</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// Revenue Chart
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+new Chart(revenueCtx, {
+  type: 'line',
+  data: {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    datasets: [{
+      label: 'Revenue (₦)',
+      data: [125000, 158000, 210000, 245000, 280000, 320000, 380000, 420000, 460000, 510000, 580000, 650000],
+      borderColor: '#2D6A4F',
+      backgroundColor: 'rgba(45, 106, 79, 0.1)',
+      borderWidth: 3,
+      tension: 0.4,
+      fill: true,
+      pointBackgroundColor: '#2D6A4F',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (context) => `₦${context.raw.toLocaleString()}`
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: (value) => '₦' + value.toLocaleString()
+        },
+        grid: { color: 'rgba(0,0,0,0.05)' }
+      },
+      x: {
+        grid: { display: false }
+      }
+    }
+  }
+});
+
+// Order Distribution Chart
+const orderCtx = document.getElementById('orderDistributionChart').getContext('2d');
+const orderData = {
+  labels: ['Pending', 'Processing', 'Shipped', 'Delivered'],
+  datasets: [{
+    data: [<%= stats.pending %>, <%= stats.processing %>, <%= stats.shipped %>, <%= stats.delivered %>],
+    backgroundColor: ['#D93838', '#FFB800', '#17a2b8', '#2D6A4F'],
+    borderWidth: 0,
+    borderRadius: 8
+  }]
+};
+
+new Chart(orderCtx, {
+  type: 'doughnut',
+  data: orderData,
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '65%',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = ((context.raw / total) * 100).toFixed(1);
+            return `${context.label}: ${context.raw} (${percentage}%)`;
+          }
+        }
+      }
+    }
+  }
+});
+
+// Generate legend for doughnut chart
+const legendContainer = document.getElementById('orderLegend');
+const colors = ['#D93838', '#FFB800', '#17a2b8', '#2D6A4F'];
+const labels = ['Pending', 'Processing', 'Shipped', 'Delivered'];
+const values = [<%= stats.pending %>, <%= stats.processing %>, <%= stats.shipped %>, <%= stats.delivered %>];
+const total = values.reduce((a, b) => a + b, 0);
+
+legendContainer.innerHTML = labels.map((label, i) => `
+  <div class="legend-item">
+    <span class="legend-color" style="background: ${colors[i]};"></span>
+    <span class="legend-label">${label}</span>
+    <span class="legend-value">${values[i]} (${total > 0 ? ((values[i]/total)*100).toFixed(1) : 0}%)</span>
+  </div>
+`).join('');
+</script>
+
+<style>
+/* Enterprise Dashboard Styles */
+.enterprise {
+  padding: 1.5rem;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-left h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.25rem;
+}
+
+.welcome-message {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.date-range {
+  display: flex;
+  background: white;
+  border-radius: 10px;
+  padding: 0.25rem;
+  border: 1px solid #e5e7eb;
+}
+
+.date-btn {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  color: #666;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.date-btn:hover,
+.date-btn.active {
+  background: #2D6A4F;
+  color: white;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.refresh-btn:hover {
+  background: #f3f4f6;
+}
+
+/* KPI Cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.kpi-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kpi-card.primary .kpi-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.kpi-card.success .kpi-icon { background: linear-gradient(135deg, #2D6A4F 0%, #409f7a 100%); }
+.kpi-card.warning .kpi-icon { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.kpi-card.info .kpi-icon { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.kpi-card.dark .kpi-icon { background: linear-gradient(135deg, #434343 0%, #000000 100%); }
+.kpi-card.accent .kpi-icon { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+.kpi-content {
+  flex: 1;
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #999;
+}
+
+.kpi-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0.25rem 0;
+  line-height: 1.2;
+}
+
+.kpi-trend {
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.kpi-trend.positive { color: #2D6A4F; }
+.kpi-trend.negative { color: #D93838; }
+.kpi-trend.neutral { color: #FFB800; }
+
+/* Charts */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid #f0f0f0;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.chart-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.chart-select {
+  padding: 0.35rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  background: white;
+  cursor: pointer;
+}
+
+.chart-container {
+  height: 250px;
+  position: relative;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.legend-value {
+  color: #666;
+  margin-left: 0.25rem;
+}
+
+/* Analytics */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.analytics-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid #f0f0f0;
+}
+
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.analytics-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.view-link {
+  color: #2D6A4F;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.view-link:hover {
+  text-decoration: underline;
+}
+
+.top-product-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.top-product-item:last-child {
+  border-bottom: none;
+}
+
+.product-rank {
+  width: 28px;
+  height: 28px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.top-product-item:nth-child(1) .product-rank { background: #FFD700; color: #1a1a1a; }
+.top-product-item:nth-child(2) .product-rank { background: #C0C0C0; color: #1a1a1a; }
+.top-product-item:nth-child(3) .product-rank { background: #CD7F32; color: white; }
+
+.product-info {
+  flex: 1;
+}
+
+.product-info h4 {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.15rem;
+}
+
+.product-info p {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.product-trend {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.product-trend.positive { color: #2D6A4F; }
+.product-trend.negative { color: #D93838; }
+.product-trend.neutral { color: #999; }
+
+/* Activity Timeline */
+.activity-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: #fafafa;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.activity-item:hover {
+  background: #f0f0f0;
+}
+
+.activity-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+}
+
+.activity-icon.order { background: #e8f5e9; color: #2D6A4F; }
+.activity-icon.subscriber { background: #e3f2fd; color: #1565C0; }
+.activity-icon.message { background: #fff3e0; color: #E65100; }
+.activity-icon.product { background: #f3e5f5; color: #6B1A2A; }
+
+.activity-content p {
+  font-size: 0.9rem;
+  margin-bottom: 0.15rem;
+}
+
+.activity-content span {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+/* Bottom Grid */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.bottom-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid #f0f0f0;
+}
+
+.card-header {
+  margin-bottom: 1rem;
+}
+
+.card-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Status Breakdown */
+.status-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.status-bar {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.status-item.pending .status-bar { background: #D93838; }
+.status-item.processing .status-bar { background: #FFB800; }
+.status-item.shipped .status-bar { background: #17a2b8; }
+.status-item.delivered .status-bar { background: #2D6A4F; }
+
+.status-label {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.status-count {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Quick Actions Grid */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.quick-action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: #fafafa;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  color: #666;
+}
+
+.quick-action-card:hover {
+  background: white;
+  border-color: #2D6A4F;
+  transform: translateY(-2px);
+  color: #2D6A4F;
+}
+
+.qa-icon {
+  font-size: 1.5rem;
+  font-weight: 300;
+}
+
+.qa-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Enterprise Table */
+.table-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid #f0f0f0;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.table-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.enterprise-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.enterprise-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: #fafafa;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
+  font-weight: 600;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.enterprise-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9rem;
+}
+
+.enterprise-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.customer-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.customer-name {
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.customer-email {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-badge.success { background: #e8f5e9; color: #2D6A4F; }
+.status-badge.warning { background: #fff8e1; color: #F57C00; }
+.status-badge.info { background: #e3f2fd; color: #1565C0; }
+.status-badge.danger { background: #ffebee; color: #D93838; }
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.action-btn-icon:hover {
+  background: #2D6A4F;
+  color: white;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+}
+
+.empty-icon {
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
+.empty-state h4 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #666;
+}
+
+.empty-state p {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .header-right {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+  
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .enterprise-table {
+    font-size: 0.8rem;
+  }
+  
+  .enterprise-table th,
+  .enterprise-table td {
+    padding: 0.5rem;
+  }
+}
+</style>
+
+<%- include('partials/admin-footer') %>

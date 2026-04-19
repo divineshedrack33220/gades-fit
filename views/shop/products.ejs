@@ -1,0 +1,332 @@
+<%- include('../partials/header') %>
+
+<%
+// Safety checks - get categories from settings or use defaults
+var settingsCategories = (settings && settings.categories) ? settings.categories : [
+  { name: 'Classy', link: '/products?cat=Classy' },
+  { name: 'Modern', link: '/products?cat=Modern' },
+  { name: 'Comfy', link: '/products?cat=Comfy' },
+  { name: 'Accessories', link: '/products?cat=Accessories' }
+];
+%>
+
+<!-- Shop Hero -->
+<section class="page-hero">
+  <div class="container">
+    <h1 class="page-title">Shop <span class="accent-text">The Collection</span></h1>
+    <p class="page-subtitle">Classy. Modern. Comfy. Handmade with intention.</p>
+  </div>
+</section>
+
+<!-- Filter Bar - Dynamic Categories -->
+<section class="filter-bar">
+  <div class="container">
+    <div class="filter-wrapper">
+      <div class="filter-buttons">
+        <a href="/products" class="filter-btn <%= !selectedCategory || selectedCategory === 'all' ? 'active' : '' %>">All</a>
+        <% settingsCategories.forEach(function(cat) { %>
+          <a href="<%= cat.link %>" class="filter-btn <%= selectedCategory === cat.name ? 'active' : '' %>"><%= cat.name %></a>
+        <% }); %>
+      </div>
+      <select class="sort-select" id="sortSelect" name="sort">
+        <option value="featured">Featured</option>
+        <option value="price-low">Price: Low to High</option>
+        <option value="price-high">Price: High to Low</option>
+        <option value="newest">Newest</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<!-- Products Grid - DYNAMIC -->
+<section class="shop-products">
+  <div class="container">
+    <% if (products && products.length > 0) { %>
+      <div class="products-grid">
+        <% products.forEach(function(product) { 
+          var priceDisplay = typeof product.price === 'number' ? product.price.toLocaleString() : product.price;
+          var rating = product.comfyRating || 5;
+        %>
+          <div class="product-card" data-category="<%= product.category ? product.category.toLowerCase() : '' %>">
+            <a href="/product/<%= product._id %>">
+              <div class="product-image">
+                <% if (product.imageUrl) { %>
+                  <img src="<%= product.imageUrl %>" alt="<%= product.name %>" loading="lazy">
+                <% } else { %>
+                  <div class="placeholder-image">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="2" y="2" width="20" height="20" rx="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                  </div>
+                <% } %>
+                <% if (product.featured) { %>
+                  <span class="product-tag" style="background: var(--burgundy);">Featured</span>
+                <% } else if (product.inStock === false) { %>
+                  <span class="product-tag" style="background: #D93838;">Sold Out</span>
+                <% } else { %>
+                  <span class="product-tag"><%= product.category || 'New' %></span>
+                <% } %>
+              </div>
+              <h4><%= product.name %></h4>
+              <p class="product-category"><%= product.category || 'Uncategorized' %></p>
+              <p class="product-price">₦<%= priceDisplay %></p>
+              
+              <!-- Comfy Rating -->
+              <div class="product-rating">
+                <% for (var i = 1; i <= 5; i++) { %>
+                  <span class="star<%= i <= rating ? ' filled' : '' %>">★</span>
+                <% } %>
+              </div>
+              
+              <!-- Color Options -->
+              <% if (product.colors && product.colors.length > 0) { %>
+                <div class="product-colors">
+                  <% product.colors.slice(0, 3).forEach(function(color) { %>
+                    <span class="color-dot" style="background: <%= color.toLowerCase() %>;" title="<%= color %>"></span>
+                  <% }); %>
+                </div>
+              <% } %>
+            </a>
+            <% if (product.inStock !== false) { %>
+              <button class="btn-quick-add"
+                data-id="<%= product._id %>"
+                data-name="<%= product.name %>"
+                data-price="<%= product.price %>"
+                data-image="<%= product.imageUrl || '' %>"
+                data-category="<%= product.category || '' %>"
+                onclick="quickAddToCart(this)">
+                Quick Add +
+              </button>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M20 7v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7"/>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+        <p>No products found.</p>
+        <p>Check back soon for new arrivals!</p>
+        <a href="/products" class="btn btn-outline">View All Products</a>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<style>
+.placeholder-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-light);
+  color: var(--text-muted);
+  aspect-ratio: 3 / 4;
+}
+.product-card a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.product-rating {
+  display: flex;
+  gap: 2px;
+  margin: 5px 0;
+}
+.star {
+  color: #ddd;
+  font-size: 0.8rem;
+}
+.star.filled {
+  color: #FFB800;
+}
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+}
+.empty-state p {
+  margin-bottom: 1rem;
+  color: var(--text-muted);
+}
+.filter-btn {
+  text-decoration: none;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  transition: all 0.2s;
+  display: inline-block;
+}
+.filter-btn.active,
+.filter-btn:hover {
+  background: var(--olive);
+  color: white;
+  border-color: var(--olive);
+}
+.btn-quick-add {
+  width: 100%;
+  padding: 0.6rem;
+  margin-top: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-dark);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-quick-add:hover {
+  background: var(--olive);
+  color: white;
+  border-color: var(--olive);
+}
+.btn-quick-add.added {
+  background: #2D6A4F !important;
+  color: white !important;
+  border-color: #2D6A4F !important;
+}
+.product-colors {
+  display: flex;
+  gap: 6px;
+  margin-top: 0.5rem;
+}
+.color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--border-light);
+}
+</style>
+
+<script>
+// =============================================
+// TOAST SYSTEM (3-Second Auto-hide)
+// =============================================
+(function() {
+  'use strict';
+  
+  const Toast = {
+    container: null,
+    
+    init() {
+      if (this.container) return;
+      this.container = document.createElement('div');
+      this.container.className = 'toast-container';
+      document.body.appendChild(this.container);
+    },
+    
+    show(message, type = 'success') {
+      this.init();
+      const icons = { success: '✓', error: '✕', warning: '!', info: 'i' };
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || '✓'}</span>
+        <div class="toast-content">
+          <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close">✕</button>
+        <div class="toast-progress"></div>
+      `;
+      this.container.appendChild(toast);
+      toast.querySelector('.toast-close').addEventListener('click', () => this.remove(toast));
+      const timeout = setTimeout(() => this.remove(toast), 3000);
+      toast.dataset.timeout = timeout;
+    },
+    
+    remove(toast) {
+      clearTimeout(parseInt(toast.dataset.timeout));
+      toast.style.animation = 'slideInToast 0.3s ease reverse';
+      setTimeout(() => toast.remove(), 300);
+    }
+  };
+  
+  window.Toast = Toast;
+})();
+
+// =============================================
+// QUICK ADD TO CART (with Toast)
+// =============================================
+window.quickAddToCart = function(btn) {
+  const id = btn.dataset.id;
+  const name = btn.dataset.name;
+  const price = btn.dataset.price;
+  const image = btn.dataset.image;
+  const category = btn.dataset.category;
+  
+  if (!id || !name || !price) return;
+  
+  const cart = JSON.parse(localStorage.getItem('gades_fit_cart') || '[]');
+  const existing = cart.find(item => item.id === id);
+  
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({
+      id, name,
+      price: parseFloat(price),
+      image: image || '',
+      category: category || '',
+      color: 'Default',
+      size: 'One Size',
+      quantity: 1
+    });
+  }
+  
+  localStorage.setItem('gades_fit_cart', JSON.stringify(cart));
+  updateCartCount();
+  
+  // Visual feedback
+  btn.classList.add('added');
+  btn.textContent = 'Added!';
+  setTimeout(() => {
+    btn.classList.remove('added');
+    btn.textContent = 'Quick Add +';
+  }, 1000);
+  
+  // Show Toast
+  if (window.Toast) {
+    window.Toast.show(name + ' added to cart!', 'success');
+  }
+};
+
+window.updateCartCount = function() {
+  const cart = JSON.parse(localStorage.getItem('gades_fit_cart') || '[]');
+  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+  document.querySelectorAll('.cart-count').forEach(el => {
+    el.textContent = count;
+    el.style.display = count > 0 ? 'inline-block' : 'none';
+  });
+};
+
+// =============================================
+// SORT SELECT HANDLER
+// =============================================
+document.getElementById('sortSelect').addEventListener('change', function() {
+  var currentUrl = new URL(window.location.href);
+  currentUrl.searchParams.set('sort', this.value);
+  window.location.href = currentUrl.toString();
+});
+
+// Set current sort value from URL
+(function() {
+  var urlParams = new URLSearchParams(window.location.search);
+  var sortValue = urlParams.get('sort') || 'featured';
+  var selectEl = document.getElementById('sortSelect');
+  if (selectEl) {
+    selectEl.value = sortValue;
+  }
+})();
+
+// Initialize cart count
+updateCartCount();
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,936 @@
+<%- include('partials/admin-header') %>
+
+<div class="admin-subscribers enterprise">
+  
+  <!-- Header -->
+  <div class="subscribers-header">
+    <div class="header-left">
+      <h2>Newsletter Subscribers</h2>
+      <p class="header-subtitle">Manage your email subscriber list</p>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-outline" onclick="exportSubscribers()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Export CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar-enterprise">
+    <div class="search-wrapper">
+      <span class="search-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </span>
+      <input type="text" 
+             id="subscriberSearch" 
+             class="search-input" 
+             placeholder="Search by email..." 
+             aria-label="Search subscribers">
+      <button class="clear-search" id="clearSearch" type="button" style="display: none;">×</button>
+    </div>
+    
+    <div class="filter-actions">
+      <select id="statusFilter" class="filter-select">
+        <option value="all">All Subscribers</option>
+        <option value="active">Active Only</option>
+        <option value="inactive">Inactive Only</option>
+      </select>
+      
+      <button class="btn btn-outline" id="resetFilters">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+        </svg>
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Status Tabs -->
+  <div class="status-tabs">
+    <button class="status-tab active" data-status="all">
+      <span class="tab-label">All Subscribers</span>
+      <span class="tab-count"><%= subscribers.length %></span>
+    </button>
+    <button class="status-tab" data-status="active">
+      <span class="tab-label">Active</span>
+      <span class="tab-count active"><%= subscribers.filter(s => s.active !== false).length %></span>
+    </button>
+    <button class="status-tab" data-status="inactive">
+      <span class="tab-label">Inactive</span>
+      <span class="tab-count inactive"><%= subscribers.filter(s => s.active === false).length %></span>
+    </button>
+  </div>
+  
+  <!-- Alerts -->
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="alert alert-success" role="alert">
+      <span class="alert-icon">✓</span>
+      <span class="alert-message"><%= success %></span>
+      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+  <% } %>
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-error" role="alert">
+      <span class="alert-icon">!</span>
+      <span class="alert-message"><%= error %></span>
+      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+  <% } %>
+  
+  <% if (subscribers && subscribers.length > 0) { %>
+    <div class="table-responsive">
+      <table class="enterprise-table" id="subscribersTable">
+        <thead>
+          <tr>
+            <th style="width: 40px;">
+              <input type="checkbox" id="selectAll" class="checkbox-enterprise">
+            </th>
+            <th>Email Address</th>
+            <th>Subscribed Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% subscribers.forEach(function(sub) { %>
+            <tr class="subscriber-row" 
+                data-email="<%= sub.email.toLowerCase() %>"
+                data-status="<%= sub.active !== false ? 'active' : 'inactive' %>">
+              <td>
+                <input type="checkbox" class="subscriber-checkbox checkbox-enterprise" value="<%= sub.email %>">
+              </td>
+              <td>
+                <div class="email-cell">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="email-icon">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                  <span class="email-address"><%= sub.email %></span>
+                </div>
+              </td>
+              <td>
+                <span class="subscribed-date">
+                  <%= sub.subscribedAt ? new Date(sub.subscribedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A' %>
+                </span>
+              </td>
+              <td>
+                <% if (sub.active !== false) { %>
+                  <span class="status-badge success">
+                    <span class="status-dot"></span>
+                    Active
+                  </span>
+                <% } else { %>
+                  <span class="status-badge danger">
+                    <span class="status-dot"></span>
+                    Inactive
+                  </span>
+                <% } %>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <% if (sub.active !== false) { %>
+                    <form action="/admin/subscribers/delete/<%= sub.email %>" method="POST" class="delete-form">
+                      <button type="submit" 
+                              class="action-btn-icon" 
+                              title="Unsubscribe"
+                              onclick="return confirm('Unsubscribe <%= sub.email %>?')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M3 6h18"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                      </button>
+                    </form>
+                  <% } else { %>
+                    <button class="action-btn-icon" title="Reactivate" onclick="reactivateSubscriber('<%= sub.email %>')">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6"/>
+                        <path d="M1 20v-6h6"/>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                      </svg>
+                    </button>
+                  <% } %>
+                  <button class="action-btn-icon" title="Copy Email" onclick="copyEmail('<%= sub.email %>')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Bulk Actions Bar -->
+    <div class="bulk-actions" id="bulkActions" style="display: none;">
+      <span class="selected-count"><span id="selectedCount">0</span> selected</span>
+      <div class="bulk-buttons">
+        <button class="btn btn-outline btn-sm" onclick="bulkExport()">Export Selected</button>
+        <button class="btn btn-danger btn-sm" onclick="bulkUnsubscribe()">Unsubscribe Selected</button>
+      </div>
+      <button class="bulk-close" onclick="clearSelection()">×</button>
+    </div>
+    
+    <!-- Simple Footer -->
+    <div class="table-footer-simple">
+      <span><strong><%= subscribers.length %></strong> total subscribers</span>
+      <span class="separator">•</span>
+      <span class="active-count"><strong><%= subscribers.filter(s => s.active !== false).length %></strong> active</span>
+      <span class="separator">•</span>
+      <span class="inactive-count"><strong><%= subscribers.filter(s => s.active === false).length %></strong> inactive</span>
+    </div>
+    
+    <!-- Pagination -->
+    <% if (typeof pagination !== 'undefined' && pagination.pages > 1) { %>
+      <div class="pagination-enterprise">
+        <a href="?page=1" class="page-btn <%= pagination.page === 1 ? 'disabled' : '' %>">«</a>
+        <a href="?page=<%= Math.max(1, pagination.page - 1) %>" class="page-btn <%= pagination.page === 1 ? 'disabled' : '' %>">‹</a>
+        
+        <% for (var i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.pages, pagination.page + 2); i++) { %>
+          <a href="?page=<%= i %>" class="page-btn <%= i === pagination.page ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+        
+        <a href="?page=<%= Math.min(pagination.pages, pagination.page + 1) %>" class="page-btn <%= pagination.page === pagination.pages ? 'disabled' : '' %>">›</a>
+        <a href="?page=<%= pagination.pages %>" class="page-btn <%= pagination.page === pagination.pages ? 'disabled' : '' %>">»</a>
+      </div>
+    <% } %>
+    
+  <% } else { %>
+    <div class="empty-state-enterprise">
+      <div class="empty-illustration">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+      </div>
+      <h3>No Subscribers Yet</h3>
+      <p>When visitors sign up for the newsletter, they'll appear here.</p>
+    </div>
+  <% } %>
+</div>
+
+<style>
+/* Enterprise Subscribers Page */
+.enterprise {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.subscribers-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-left h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 0.25rem;
+}
+
+.header-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Filter Bar */
+.filter-bar-enterprise {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 350px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--olive);
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+}
+
+.clear-search {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.filter-select {
+  padding: 10px 32px 10px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+/* Status Tabs */
+.status-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border-lighter);
+  padding-bottom: 0.75rem;
+}
+
+.status-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.status-tab:hover {
+  background: var(--bg-gray);
+}
+
+.status-tab.active {
+  background: var(--olive);
+  color: white;
+}
+
+.tab-count {
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(0,0,0,0.06);
+}
+
+.status-tab.active .tab-count {
+  background: rgba(255,255,255,0.2);
+}
+
+/* Alerts */
+.alert {
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.alert-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.alert-icon {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.alert-message {
+  flex: 1;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+/* Table */
+.table-responsive {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-lighter);
+  background: white;
+}
+
+.enterprise-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.enterprise-table th {
+  text-align: left;
+  padding: 14px 16px;
+  background: var(--bg-gray);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-light);
+  white-space: nowrap;
+}
+
+.enterprise-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-lighter);
+  vertical-align: middle;
+}
+
+.enterprise-table tbody tr:hover {
+  background: var(--bg-gray);
+}
+
+.subscriber-row.hidden {
+  display: none;
+}
+
+.checkbox-enterprise {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  accent-color: var(--olive);
+}
+
+.email-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.email-icon {
+  color: var(--text-muted);
+}
+
+.email-address {
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.subscribed-date {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.success {
+  background: #D1FAE5;
+  color: #2D6A4F;
+}
+
+.status-badge.danger {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.action-btn-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-gray);
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.action-btn-icon:hover {
+  background: var(--olive);
+  color: white;
+}
+
+.delete-form {
+  display: inline;
+}
+
+/* Bulk Actions */
+.bulk-actions {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  z-index: 100;
+  border: 1px solid var(--border-lighter);
+}
+
+.bulk-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.selected-count {
+  font-weight: 500;
+}
+
+.bulk-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.btn-danger {
+  background: #DC2626;
+  color: white;
+  border-color: #DC2626;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+/* Simple Footer */
+.table-footer-simple {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem 0 0.5rem;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.table-footer-simple .separator {
+  color: var(--border-light);
+}
+
+.active-count {
+  color: #2D6A4F;
+}
+
+.inactive-count {
+  color: #DC2626;
+}
+
+/* Pagination */
+.pagination-enterprise {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 1.5rem;
+}
+
+.page-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  background: white;
+  border: 1px solid var(--border-lighter);
+  border-radius: 8px;
+  color: var(--text-dark);
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.page-btn:hover:not(.disabled) {
+  background: var(--bg-gray);
+  border-color: var(--olive);
+}
+
+.page-btn.active {
+  background: var(--olive);
+  border-color: var(--olive);
+  color: white;
+}
+
+.page-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Empty State */
+.empty-state-enterprise {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid var(--border-lighter);
+}
+
+.empty-illustration {
+  color: var(--border-light);
+  margin-bottom: 1rem;
+}
+
+.empty-state-enterprise h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-dark);
+}
+
+.empty-state-enterprise p {
+  color: var(--text-muted);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--border-light);
+  color: var(--text-dark);
+}
+
+.btn-outline:hover {
+  background: var(--bg-gray);
+  border-color: var(--olive);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .subscribers-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-right .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .filter-bar-enterprise {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-wrapper {
+    max-width: none;
+  }
+  
+  .filter-actions {
+    flex-wrap: wrap;
+  }
+  
+  .filter-select {
+    flex: 1;
+  }
+  
+  .status-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+  }
+  
+  .bulk-actions {
+    flex-direction: column;
+    width: 90%;
+    padding: 1rem;
+  }
+  
+  .table-footer-simple {
+    flex-wrap: wrap;
+  }
+}
+</style>
+
+<script>
+// Search functionality
+const searchInput = document.getElementById('subscriberSearch');
+const clearSearch = document.getElementById('clearSearch');
+
+if (searchInput) {
+  searchInput.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('.subscriber-row');
+    
+    clearSearch.style.display = searchTerm ? 'block' : 'none';
+    
+    rows.forEach(row => {
+      const email = row.dataset.email || '';
+      
+      if (email.includes(searchTerm)) {
+        row.classList.remove('hidden');
+      } else {
+        row.classList.add('hidden');
+      }
+    });
+    
+    updateVisibleCounts();
+  });
+  
+  clearSearch.addEventListener('click', function() {
+    searchInput.value = '';
+    this.style.display = 'none';
+    document.querySelectorAll('.subscriber-row').forEach(row => row.classList.remove('hidden'));
+    updateVisibleCounts();
+  });
+}
+
+// Status filter
+const statusFilter = document.getElementById('statusFilter');
+if (statusFilter) {
+  statusFilter.addEventListener('change', function() {
+    const status = this.value;
+    const rows = document.querySelectorAll('.subscriber-row');
+    
+    rows.forEach(row => {
+      if (status === 'all' || row.dataset.status === status) {
+        row.classList.remove('hidden');
+      } else {
+        row.classList.add('hidden');
+      }
+    });
+    
+    document.querySelectorAll('.status-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.status === status);
+    });
+    
+    updateVisibleCounts();
+  });
+}
+
+// Status tabs
+document.querySelectorAll('.status-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    const status = this.dataset.status;
+    
+    document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    
+    if (statusFilter) {
+      statusFilter.value = status;
+    }
+    
+    const rows = document.querySelectorAll('.subscriber-row');
+    rows.forEach(row => {
+      if (status === 'all' || row.dataset.status === status) {
+        row.classList.remove('hidden');
+      } else {
+        row.classList.add('hidden');
+      }
+    });
+    
+    updateVisibleCounts();
+  });
+});
+
+// Reset filters
+document.getElementById('resetFilters')?.addEventListener('click', function() {
+  if (searchInput) {
+    searchInput.value = '';
+    clearSearch.style.display = 'none';
+  }
+  if (statusFilter) statusFilter.value = 'all';
+  
+  document.querySelectorAll('.subscriber-row').forEach(row => row.classList.remove('hidden'));
+  document.querySelectorAll('.status-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.status === 'all');
+  });
+  
+  updateVisibleCounts();
+});
+
+// Update visible counts
+function updateVisibleCounts() {
+  const visibleRows = Array.from(document.querySelectorAll('.subscriber-row')).filter(r => !r.classList.contains('hidden'));
+  
+  document.querySelectorAll('.status-tab').forEach(tab => {
+    const status = tab.dataset.status;
+    const countSpan = tab.querySelector('.tab-count');
+    
+    if (status === 'all') {
+      countSpan.textContent = visibleRows.length;
+    } else {
+      countSpan.textContent = visibleRows.filter(r => r.dataset.status === status).length;
+    }
+  });
+}
+
+// Select all functionality
+const selectAll = document.getElementById('selectAll');
+const checkboxes = document.querySelectorAll('.subscriber-checkbox');
+const bulkActions = document.getElementById('bulkActions');
+const selectedCount = document.getElementById('selectedCount');
+
+function updateBulkActions() {
+  const checked = document.querySelectorAll('.subscriber-checkbox:checked');
+  const count = checked.length;
+  
+  selectedCount.textContent = count;
+  bulkActions.style.display = count > 0 ? 'flex' : 'none';
+}
+
+if (selectAll) {
+  selectAll.addEventListener('change', function() {
+    const visibleCheckboxes = Array.from(checkboxes).filter(cb => 
+      !cb.closest('tr').classList.contains('hidden')
+    );
+    visibleCheckboxes.forEach(cb => cb.checked = this.checked);
+    updateBulkActions();
+  });
+}
+
+checkboxes.forEach(cb => cb.addEventListener('change', updateBulkActions));
+
+function clearSelection() {
+  checkboxes.forEach(cb => cb.checked = false);
+  if (selectAll) selectAll.checked = false;
+  updateBulkActions();
+}
+
+function getSelectedEmails() {
+  return Array.from(document.querySelectorAll('.subscriber-checkbox:checked')).map(cb => cb.value);
+}
+
+// Export functions
+function exportSubscribers() {
+  const rows = document.querySelectorAll('.subscriber-row:not(.hidden)');
+  const emails = Array.from(rows).map(r => r.dataset.email);
+  alert('Export ' + emails.length + ' subscribers to CSV');
+}
+
+function bulkExport() {
+  const emails = getSelectedEmails();
+  if (emails.length === 0) return;
+  alert('Export ' + emails.length + ' selected subscribers');
+}
+
+function bulkUnsubscribe() {
+  const emails = getSelectedEmails();
+  if (emails.length === 0) return;
+  if (!confirm('Unsubscribe ' + emails.length + ' selected subscribers?')) return;
+  alert('Bulk unsubscribe - implement API endpoint');
+}
+
+function copyEmail(email) {
+  navigator.clipboard?.writeText(email).then(() => {
+    alert('Email copied: ' + email);
+  }).catch(() => {
+    prompt('Copy this email:', email);
+  });
+}
+
+function reactivateSubscriber(email) {
+  alert('Reactivate subscriber: ' + email);
+}
+
+// Auto-hide alerts
+document.querySelectorAll('.alert').forEach(alert => {
+  setTimeout(() => {
+    alert.style.transition = 'opacity 0.3s';
+    alert.style.opacity = '0';
+    setTimeout(() => alert.remove(), 300);
+  }, 5000);
+});
+
+// Initialize counts
+updateVisibleCounts();
+</script>
+
+<%- include('partials/admin-footer') %>

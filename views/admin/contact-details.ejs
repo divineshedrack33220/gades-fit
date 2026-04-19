@@ -1,0 +1,221 @@
+<%- include('partials/admin-header') %>
+
+<div class="admin-contact-details">
+  <div class="page-header">
+    <h2>Message Details</h2>
+    <a href="/admin/contacts" class="btn btn-outline">← Back to Messages</a>
+  </div>
+  
+  <div class="contact-detail-card">
+    <div class="contact-header">
+      <div>
+        <h3>From: <%= contact.name %></h3>
+        <p class="contact-email"><%= contact.email %></p>
+      </div>
+      <div class="contact-status">
+        <% if (contact.status === 'unread') { %>
+          <span class="badge badge-warning">Unread</span>
+        <% } else if (contact.status === 'read') { %>
+          <span class="badge badge-info">Read</span>
+        <% } else if (contact.status === 'replied') { %>
+          <span class="badge badge-success">Replied</span>
+        <% } else { %>
+          <span class="badge"><%= contact.status %></span>
+        <% } %>
+      </div>
+    </div>
+    
+    <div class="contact-meta">
+      <p><strong>Subject:</strong> <%= contact.subject %></p>
+      <p><strong>Date:</strong> <%= contact.createdAt ? new Date(contact.createdAt).toLocaleString() : 'N/A' %></p>
+    </div>
+    
+    <div class="contact-message">
+      <h4>Message:</h4>
+      <div class="message-content">
+        <p><%= contact.message.replace(/\n/g, '<br>') %></p>
+      </div>
+    </div>
+    
+    <div class="contact-actions">
+      <form action="/admin/contacts/<%= contact._id %>/status" method="POST" style="display: inline;">
+        <input type="hidden" name="status" value="replied">
+        <button type="submit" class="btn btn-success" onclick="return confirm('Mark as replied?')">✓ Mark as Replied</button>
+      </form>
+      
+      <form action="/admin/contacts/<%= contact._id %>/status" method="POST" style="display: inline;">
+        <input type="hidden" name="status" value="read">
+        <button type="submit" class="btn btn-outline">📖 Mark as Read</button>
+      </form>
+      
+      <form action="/admin/contacts/<%= contact._id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this message permanently?')">
+        <button type="submit" class="btn btn-danger">🗑️ Delete Message</button>
+      </form>
+    </div>
+    
+    <!-- Reply Section (Optional) -->
+    <div class="reply-section">
+      <h4>Reply to <%= contact.name %></h4>
+      <p>Click the button below to open your email client:</p>
+      <a href="mailto:<%= contact.email %>?subject=Re: <%= encodeURIComponent(contact.subject) %>" class="btn btn-primary" target="_blank">
+        ✉️ Reply via Email
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+.admin-contact-details {
+  max-width: 900px;
+}
+
+.contact-detail-card {
+  background: white;
+  border: 1px solid var(--border-light);
+  padding: 2rem;
+  margin-top: 1.5rem;
+}
+
+.contact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.contact-header h3 {
+  margin-bottom: 0.25rem;
+  color: var(--text-dark);
+}
+
+.contact-email {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.contact-meta {
+  background: var(--bg-light);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 4px;
+}
+
+.contact-meta p {
+  margin-bottom: 0.5rem;
+}
+
+.contact-meta p:last-child {
+  margin-bottom: 0;
+}
+
+.contact-message {
+  margin-bottom: 2rem;
+}
+
+.contact-message h4 {
+  margin-bottom: 1rem;
+  color: var(--olive);
+}
+
+.message-content {
+  background: var(--bg-body);
+  padding: 1.5rem;
+  border-radius: 4px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.contact-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.reply-section {
+  background: #f0f7ff;
+  padding: 1.5rem;
+  border-radius: 4px;
+}
+
+.reply-section h4 {
+  margin-bottom: 0.5rem;
+  color: var(--olive);
+}
+
+.reply-section p {
+  margin-bottom: 1rem;
+  color: var(--text-muted);
+}
+
+.btn-success {
+  background: #2D6A4F;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.btn-success:hover {
+  background: #1e4a37;
+}
+
+.btn-danger {
+  background: #D93838;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.btn-danger:hover {
+  background: #c53030;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.badge-warning {
+  background: #FFB800;
+  color: #000;
+}
+
+.badge-info {
+  background: #17a2b8;
+  color: white;
+}
+
+.badge-success {
+  background: #2D6A4F;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .contact-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .contact-actions {
+    flex-direction: column;
+  }
+  
+  .contact-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+</style>
+
+<%- include('partials/admin-footer') %>

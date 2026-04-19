@@ -1,0 +1,17 @@
+# render.yaml
+services:
+  - type: web
+    name: gades-fit
+    env: node
+    region: oregon
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: abigail@gadesfit.com
+      - key: ADMIN_PASSWORD_HASH
+        value: $2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi

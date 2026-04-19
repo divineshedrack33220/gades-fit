@@ -1,0 +1,98 @@
+<!-- views/partials/footer.ejs -->
+  </main>
+  
+  <!-- Back to Top Button -->
+  <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+  
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <h3>GaDes <span>fit</span></h3>
+        <p>Where Classy Meets Comfy.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="/products">Shop</a></li>
+          <li><a href="/about">Our Story</a></li>
+          <li><a href="/contact">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="footer-newsletter">
+        <h4>Join the GaDes Community</h4>
+        <p>Get 10% off your first order</p>
+        <form class="newsletter-form">
+          <input type="email" placeholder="Your email" required>
+          <button type="submit">→</button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 GaDes fit. Handmade with comfort & style.</p>
+    </div>
+  </footer>
+  
+  <!-- Scripts - MUST be in this order -->
+  <!-- <script src="/js/cart.js"></script> -->
+  <script src="/js/main.js"></script>
+  
+  <!-- Back to Top Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const backToTop = document.getElementById('backToTop');
+      
+      if (backToTop) {
+        window.addEventListener('scroll', function() {
+          if (window.scrollY > 300) {
+            backToTop.classList.add('visible');
+          } else {
+            backToTop.classList.remove('visible');
+          }
+        });
+        
+        backToTop.addEventListener('click', function() {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+    });
+  </script>
+  
+  <style>
+    .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: var(--olive);
+      color: white;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+      z-index: 99;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .back-to-top:hover {
+      background: var(--burgundy);
+    }
+    
+    @media (max-width: 768px) {
+      .back-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+      }
+    }
+  </style>
+</body>
+</html>

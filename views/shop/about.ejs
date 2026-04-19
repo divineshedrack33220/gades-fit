@@ -1,0 +1,133 @@
+<!-- views/shop/about.ejs -->
+<%- include('../partials/header') %>
+
+<%
+// Safety checks - ensure settings exists with fallbacks
+var about = (settings && settings.about) ? settings.about : {};
+var instagram = (settings && settings.instagram) ? settings.instagram : {};
+var contact = (settings && settings.contact && settings.contact.social) ? settings.contact.social : {};
+
+var heroTitle = about.heroTitle || 'Meet the woman behind <span class="accent-text">GaDes fit</span>';
+var heroSubtitle = about.heroSubtitle || 'Classy. Modern. Comfy. Born from a passion for quality and confidence.';
+var founderImage = about.founderImage || 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=800&h=1000&fit=crop';
+var studioImage = about.studioImage || 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&h=600&fit=crop';
+var founderName = about.founderName || 'Abigail';
+var founderFullName = about.founderName || 'Abigail Sam';
+var founderTitle = about.founderTitle || 'Founder & Creative Director of GaDes fit.';
+var founderStory = about.founderStory || [
+  'What started as a personal quest for clothing that felt as good as it looked has grown into a brand dedicated to women who refuse to compromise between style and comfort.',
+  'I believe that what you wear should empower you. It should move with you through busy days and quiet evenings. It should make you stand a little taller and smile a little brighter.',
+  'Every piece at GaDes fit is thoughtfully curated or handmade with attention to detail, quality fabrics, and timeless design. From our signature olive blazers to our butter-soft knitwear, each item is chosen to help you express your most confident self.'
+];
+var quote = about.quote || 'Fashion fades, but confidence is eternal. I create for the woman who knows who she is and isn\'t afraid to show it.';
+var values = about.values || [
+  { icon: '✧', title: 'Quality First', description: 'We source premium fabrics and materials because you deserve clothing that lasts.' },
+  { icon: '✧', title: 'Handmade with Love', description: 'Our accessories are crafted by skilled artisans, ensuring each piece is unique.' },
+  { icon: '✧', title: 'Affordable Luxury', description: 'Premium quality shouldn\'t break the bank. We keep our prices accessible.' },
+  { icon: '✧', title: 'Confidence First', description: 'Every design is created to make you feel powerful, beautiful, and comfortable.' }
+];
+var promiseTitle = about.promiseTitle || 'The GaDes Promise';
+var promiseText = about.promiseText || [
+  'We believe that when you look good and feel comfortable, you show up differently in the world. More confident. More present. More <em>you</em>.',
+  'That\'s why every piece we create—from our structured blazers to our cloud-soft loungewear—is designed with one goal: to help you feel like the best version of yourself.'
+];
+var signature = about.signature || 'Abigail & The GaDes fit Team';
+var instagramHandle = instagram.handle || '@gades_fit';
+var instagramTagline = instagram.tagline || 'Behind the seams, new drops, and daily inspiration.';
+var instagramLink = contact.instagram || '#';
+%>
+
+<!-- About Hero -->
+<section class="about-hero">
+  <div class="container">
+    <div class="about-hero-grid">
+      <div class="about-hero-content">
+        <span class="about-badge">Our Story</span>
+        <h1 class="about-title"><%- heroTitle %></h1>
+        <p class="about-subtitle"><%= heroSubtitle %></p>
+      </div>
+      <div class="about-hero-image">
+        <img 
+          src="<%= founderImage %>" 
+          alt="<%= founderFullName %> - Founder of GaDes fit"
+          loading="eager"
+        >
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Founder Story Section -->
+<section class="founder-story">
+  <div class="container">
+    <div class="story-grid">
+      <div class="story-image">
+        <img 
+          src="<%= studioImage %>" 
+          alt="GaDes fit Studio - Handmade accessories in progress"
+          loading="lazy"
+        >
+        <div class="story-image-overlay"></div>
+      </div>
+      <div class="story-content">
+        <h2 class="section-title">Hi, I'm <span class="accent-text"><%= founderName %></span></h2>
+        <div class="story-text">
+          <p class="lead"><%= founderTitle %></p>
+          <% founderStory.forEach(function(paragraph) { %>
+            <p><%= paragraph %></p>
+          <% }); %>
+        </div>
+        <div class="story-quote">
+          <blockquote>
+            "<%= quote %>"
+          </blockquote>
+          <cite>— <%= founderFullName %></cite>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Brand Values -->
+<section class="brand-values">
+  <div class="container">
+    <div class="values-grid">
+      <% values.forEach(function(value) { %>
+        <div class="value-card">
+          <div class="value-icon"><%= value.icon %></div>
+          <h3><%= value.title %></h3>
+          <p><%= value.description %></p>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<!-- The GaDes Promise -->
+<section class="gades-promise">
+  <div class="container">
+    <div class="promise-banner">
+      <h2><%= promiseTitle.replace('The GaDes', 'The GaDes <span>').replace('Promise', 'Promise</span>') %></h2>
+      <% promiseText.forEach(function(paragraph) { %>
+        <p><%- paragraph %></p>
+      <% }); %>
+      <div class="promise-signature">
+        <span>With love,</span>
+        <strong><%= signature %></strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Instagram CTA -->
+<section class="instagram-cta">
+  <div class="container">
+    <div class="cta-content">
+      <h3>Follow Our Journey</h3>
+      <p><%= instagramHandle %> • <%= instagramTagline %></p>
+      <a href="<%= instagramLink %>" class="btn btn-instagram" target="_blank">Follow on Instagram</a>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

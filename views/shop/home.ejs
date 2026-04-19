@@ -1,0 +1,472 @@
+<%- include('../partials/header') %>
+
+<%
+// Safety checks - ensure settings exists
+var heroBadge = (settings && settings.hero && settings.hero.badge) ? settings.hero.badge : 'New Collection';
+var heroTitle = (settings && settings.hero && settings.hero.title) ? settings.hero.title : 'Classy.\nModern.\nComfy.';
+var heroSubtitle = (settings && settings.hero && settings.hero.subtitle) ? settings.hero.subtitle : 'Handmade accessories & quality clothing in Olive, Butter & Burgundy.';
+var trustBadges = (settings && settings.hero && settings.hero.trustBadges) ? settings.hero.trustBadges : ['Free Shipping over ₦50k', 'Handmade in Lagos', '7-Day Returns'];
+var categories = (settings && settings.categories && settings.categories.length > 0) ? settings.categories : [
+  { name: 'Classy', image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&h=500&fit=crop', link: '/products?cat=Classy' },
+  { name: 'Modern', image: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=400&h=500&fit=crop', link: '/products?cat=Modern' },
+  { name: 'Comfy', image: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=400&h=500&fit=crop', link: '/products?cat=Comfy' }
+];
+var values = (settings && settings.about && settings.about.values) ? settings.about.values : [
+  { icon: '✧', title: 'Quality Fabrics', description: 'Handpicked materials that last' },
+  { icon: '✧', title: 'Affordable Luxury', description: 'Premium feel without the premium price' },
+  { icon: '✧', title: 'Handmade Accessories', description: 'Each piece crafted with care' }
+];
+var instagramHandle = (settings && settings.instagram && settings.instagram.handle) ? settings.instagram.handle : '@gades_fit';
+var instagramTagline = (settings && settings.instagram && settings.instagram.tagline) ? settings.instagram.tagline : 'Daily style inspiration';
+var instagramLink = (settings && settings.contact && settings.contact.social && settings.contact.social.instagram) ? settings.contact.social.instagram : '#';
+var newsletterTitle = (settings && settings.newsletter && settings.newsletter.title) ? settings.newsletter.title : 'Join the GaDes Community';
+var newsletterSubtitle = (settings && settings.newsletter && settings.newsletter.subtitle) ? settings.newsletter.subtitle : 'Get 10% off your first order';
+var newsletterPlaceholder = (settings && settings.newsletter && settings.newsletter.placeholder) ? settings.newsletter.placeholder : 'Your email';
+%>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-wrapper">
+      <span class="hero-badge"><%= heroBadge %></span>
+      <h1 class="hero-title">
+        <% var lines = heroTitle.split('\n'); %>
+        <%= lines[0] %><br>
+        <%= lines[1] %><br>
+        <span class="accent-text"><%= lines[2] %></span>
+      </h1>
+      <p class="hero-subtitle"><%= heroSubtitle %></p>
+      <div class="hero-buttons">
+        <a href="/products" class="btn btn-primary">Shop Now</a>
+        <a href="/about" class="btn btn-outline">Our Story</a>
+      </div>
+      <div class="hero-trust">
+        <% trustBadges.forEach(function(badge) { %>
+          <span><strong>✓</strong> <%= badge %></span>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Hero Images Grid -->
+<section class="hero-gallery">
+  <div class="container">
+    <div class="gallery-grid">
+      <div class="gallery-item large">
+        <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&h=600&fit=crop" alt="GaDes fit Collection" loading="eager">
+      </div>
+      <div class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&h=400&fit=crop" alt="Handmade Accessories" loading="lazy">
+      </div>
+      <div class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=400&fit=crop" alt="Comfy Knitwear" loading="lazy">
+      </div>
+      <div class="gallery-accent">
+        <span>GaDes fit</span>
+        <strong>'25</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Categories -->
+<section class="categories">
+  <div class="container">
+    <h2 class="section-title">The <span class="accent-text">GaDes</span> Edit</h2>
+    <p class="section-subtitle">Curated for the confident, classy woman.</p>
+    
+    <div class="categories-grid">
+      <% categories.forEach(function(cat) { %>
+        <a href="<%= cat.link %>" class="category-card">
+          <img src="<%= cat.image %>" alt="<%= cat.name %>" loading="lazy">
+          <div class="category-label">
+            <h3><%= cat.name %></h3>
+            <span>Shop Now →</span>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Products -->
+<section class="featured">
+  <div class="container">
+    <h2 class="section-title">Bestselling <span class="accent-text">Pieces</span></h2>
+    
+    <% if (typeof featuredProducts !== 'undefined' && featuredProducts.length > 0) { %>
+      <div class="products-grid">
+        <% featuredProducts.forEach(function(product) { 
+          var priceDisplay = typeof product.price === 'number' ? product.price.toLocaleString() : product.price;
+        %>
+          <div class="product-card">
+            <a href="/product/<%= product._id %>">
+              <div class="product-image">
+                <% if (product.imageUrl) { %>
+                  <img src="<%= product.imageUrl %>" alt="<%= product.name %>" loading="lazy">
+                <% } else { %>
+                  <div class="placeholder-image">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="2" y="2" width="20" height="20" rx="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                  </div>
+                <% } %>
+                <span class="product-tag"><%= product.category || 'New' %></span>
+              </div>
+              <h4><%= product.name %></h4>
+              <p class="product-price">₦<%= priceDisplay %></p>
+            </a>
+            <button class="btn-quick-add"
+              data-id="<%= product._id %>"
+              data-name="<%= product.name %>"
+              data-price="<%= product.price %>"
+              data-image="<%= product.imageUrl || '' %>"
+              data-category="<%= product.category || '' %>"
+              onclick="quickAddToCart(this)">
+              Quick Add +
+            </button>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M20 7v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7"/>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+        <p>No featured products yet.</p>
+        <p>Check out our <a href="/products">shop</a> for more!</p>
+      </div>
+    <% } %>
+    
+    <div class="view-all">
+      <a href="/products" class="btn btn-primary">View All Products →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Brand Promise -->
+<section class="promise">
+  <div class="container">
+    <div class="promise-grid">
+      <% values.forEach(function(value) { %>
+        <div class="promise-card">
+          <span class="promise-icon"><%= value.icon %></span>
+          <h4><%= value.title %></h4>
+          <p><%= value.description %></p>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<!-- Instagram -->
+<section class="instagram">
+  <div class="container">
+    <h3>Follow the Journey</h3>
+    <p><%= instagramHandle %> • <%= instagramTagline %></p>
+    <a href="<%= instagramLink %>" class="btn btn-instagram" target="_blank" rel="noopener">View Instagram</a>
+  </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter-section">
+  <div class="container">
+    <div class="newsletter-box">
+      <h3><%= newsletterTitle %></h3>
+      <p><%= newsletterSubtitle %></p>
+      <form class="newsletter-form inline-form" id="newsletterForm">
+        <input type="email" id="newsletterEmail" placeholder="<%= newsletterPlaceholder %>" required>
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+      <div id="newsletterMessage" style="margin-top: 1rem; display: none;"></div>
+    </div>
+  </div>
+</section>
+
+<style>
+.placeholder-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-light);
+  color: var(--text-muted);
+  aspect-ratio: 3 / 4;
+}
+.product-card a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.btn-quick-add {
+  width: 100%;
+  padding: 0.6rem;
+  margin-top: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-dark);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-quick-add:hover {
+  background: var(--olive);
+  color: white;
+  border-color: var(--olive);
+}
+.btn-quick-add.added {
+  background: #2D6A4F !important;
+  color: white !important;
+  border-color: #2D6A4F !important;
+}
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+}
+.empty-state p {
+  margin-bottom: 0.5rem;
+  color: var(--text-muted);
+}
+.empty-state a {
+  color: var(--burgundy);
+  text-decoration: underline;
+}
+.newsletter-section {
+  padding: 3rem 0;
+  background: var(--white);
+}
+.newsletter-box {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 2rem;
+  background: var(--bg-body);
+  border: 1px solid var(--border-light);
+}
+.newsletter-box h3 {
+  font-size: 1.8rem;
+  color: var(--olive);
+  margin-bottom: 0.5rem;
+}
+.newsletter-box p {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+.inline-form {
+  display: flex;
+  gap: 0.5rem;
+}
+.inline-form input {
+  flex: 1;
+  padding: 0.9rem 1.2rem;
+  border: 1px solid var(--border-light);
+  background: white;
+  font-size: 0.9rem;
+}
+@media (max-width: 480px) {
+  .inline-form {
+    flex-direction: column;
+  }
+}
+</style>
+
+<script>
+// =============================================
+// TOAST & CONFIRM MODAL SYSTEMS
+// =============================================
+(function() {
+  'use strict';
+  
+  // Confirm Modal
+  const ConfirmModal = {
+    overlay: null,
+    
+    init() {
+      if (document.getElementById('confirmModalOverlay')) return;
+      this.overlay = document.createElement('div');
+      this.overlay.id = 'confirmModalOverlay';
+      this.overlay.className = 'confirm-modal-overlay';
+      this.overlay.innerHTML = `
+        <div class="confirm-modal">
+          <div class="confirm-modal-header">
+            <div class="confirm-modal-icon">!</div>
+            <h3 id="confirmModalTitle">Confirm</h3>
+          </div>
+          <div class="confirm-modal-body" id="confirmModalMessage">Are you sure?</div>
+          <div class="confirm-modal-footer">
+            <button class="btn btn-outline" id="confirmModalCancel">Cancel</button>
+            <button class="btn btn-danger" id="confirmModalConfirm">Confirm</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(this.overlay);
+      document.getElementById('confirmModalCancel').addEventListener('click', () => this.hide());
+      this.overlay.addEventListener('click', (e) => { if (e.target === this.overlay) this.hide(); });
+    },
+    
+    show(options = {}) {
+      this.init();
+      const { title = 'Confirm', message = 'Are you sure?', onConfirm = () => {} } = options;
+      document.getElementById('confirmModalTitle').textContent = title;
+      document.getElementById('confirmModalMessage').textContent = message;
+      const confirmBtn = document.getElementById('confirmModalConfirm');
+      const newBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+      newBtn.addEventListener('click', () => { onConfirm(); this.hide(); });
+      this.overlay.classList.add('active');
+    },
+    
+    hide() { this.overlay.classList.remove('active'); }
+  };
+  
+  // Toast System
+  const Toast = {
+    container: null,
+    
+    init() {
+      if (this.container) return;
+      this.container = document.createElement('div');
+      this.container.className = 'toast-container';
+      document.body.appendChild(this.container);
+    },
+    
+    show(message, type = 'success') {
+      this.init();
+      const icons = { success: '✓', error: '✕', warning: '!', info: 'i' };
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || '✓'}</span>
+        <div class="toast-content">
+          <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close">✕</button>
+        <div class="toast-progress"></div>
+      `;
+      this.container.appendChild(toast);
+      toast.querySelector('.toast-close').addEventListener('click', () => this.remove(toast));
+      const timeout = setTimeout(() => this.remove(toast), 3000);
+      toast.dataset.timeout = timeout;
+    },
+    
+    remove(toast) {
+      clearTimeout(parseInt(toast.dataset.timeout));
+      toast.style.animation = 'slideInToast 0.3s ease reverse';
+      setTimeout(() => toast.remove(), 300);
+    }
+  };
+  
+  // Expose
+  window.ConfirmModal = ConfirmModal;
+  window.Toast = Toast;
+  
+  // =============================================
+  // QUICK ADD TO CART (with Toast)
+  // =============================================
+  window.quickAddToCart = function(btn) {
+    const id = btn.dataset.id;
+    const name = btn.dataset.name;
+    const price = btn.dataset.price;
+    const image = btn.dataset.image;
+    const category = btn.dataset.category;
+    
+    if (!id || !name || !price) return;
+    
+    const cart = JSON.parse(localStorage.getItem('gades_fit_cart') || '[]');
+    const existing = cart.find(item => item.id === id);
+    
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.push({
+        id, name,
+        price: parseFloat(price),
+        image: image || '',
+        category: category || '',
+        color: 'Default',
+        size: 'One Size',
+        quantity: 1
+      });
+    }
+    
+    localStorage.setItem('gades_fit_cart', JSON.stringify(cart));
+    updateCartCount();
+    
+    // Visual feedback
+    btn.classList.add('added');
+    btn.textContent = 'Added!';
+    setTimeout(() => {
+      btn.classList.remove('added');
+      btn.textContent = 'Quick Add +';
+    }, 1000);
+    
+    // Show Toast
+    Toast.show(name + ' added to cart!', 'success');
+  };
+  
+  window.updateCartCount = function() {
+    const cart = JSON.parse(localStorage.getItem('gades_fit_cart') || '[]');
+    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    document.querySelectorAll('.cart-count').forEach(el => {
+      el.textContent = count;
+      el.style.display = count > 0 ? 'inline-block' : 'none';
+    });
+  };
+  
+  // =============================================
+  // NEWSLETTER (with Toast)
+  // =============================================
+  const newsletterForm = document.getElementById('newsletterForm');
+  if (newsletterForm) {
+    newsletterForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const emailInput = document.getElementById('newsletterEmail');
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const email = emailInput.value.trim();
+      
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        Toast.show('Please enter a valid email address', 'error');
+        return;
+      }
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Subscribing...';
+      
+      try {
+        const response = await fetch('/newsletter/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          Toast.show(data.message || 'Successfully subscribed!', 'success');
+          emailInput.value = '';
+        } else {
+          Toast.show(data.message || 'Subscription failed', 'error');
+        }
+      } catch (error) {
+        Toast.show('Network error. Please try again.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Subscribe';
+      }
+    });
+  }
+  
+  // Initialize cart count
+  updateCartCount();
+})();
+</script>
+
+<%- include('../partials/footer') %>

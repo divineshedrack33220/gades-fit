@@ -1,0 +1,312 @@
+<!-- views/partials/header.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'GaDes fit - Classy. Modern. Comfy.' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <div class="logo">
+        <a href="/">GaDes <span class="logo-light">fit</span></a>
+      </div>
+      
+      <!-- Desktop Navigation -->
+      <nav class="main-nav">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/products">Shop</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </nav>
+      
+      <div class="nav-icons">
+        <a href="/cart" class="cart-icon">
+          🛒 
+          <span class="cart-count" style="display: none;">0</span>
+        </a>
+      </div>
+      
+      <!-- HAMBURGER CHECKBOX (CSS Only) -->
+      <input type="checkbox" id="menu-toggle-checkbox" class="menu-toggle-checkbox">
+      <label for="menu-toggle-checkbox" class="menu-toggle-label">
+        <span></span>
+        <span></span>
+        <span></span>
+      </label>
+      
+      <!-- Mobile Menu Dropdown -->
+      <nav class="mobile-nav">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/products">Shop</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+<!-- UNIFIED CART SYSTEM - Loads immediately -->
+<script>
+// ============================================
+// DEFINE CART_KEY FIRST - MUST BE AT TOP
+// ============================================
+const CART_KEY = 'gades_fit_cart';
+
+// ============================================
+// CART FUNCTIONS
+// ============================================
+
+// Get cart from localStorage
+window.getCart = function() {
+  try {
+    return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+  } catch (e) {
+    console.error('Error loading cart:', e);
+    return [];
+  }
+};
+
+// Save cart to localStorage
+window.saveCart = function(items) {
+  localStorage.setItem(CART_KEY, JSON.stringify(items));
+  window.updateCartCount();
+};
+
+// Update cart count in header
+window.updateCartCount = function() {
+  const items = window.getCart();
+  const count = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  document.querySelectorAll('.cart-count').forEach(el => {
+    el.textContent = count;
+    el.style.display = count > 0 ? 'inline-block' : 'none';
+  });
+};
+
+// Quick Add to Cart - Called from product buttons
+window.quickAddToCart = function(btn) {
+  console.log('✅ quickAddToCart called!');
+  
+  const id = btn.getAttribute('data-id');
+  const name = btn.getAttribute('data-name');
+  const price = btn.getAttribute('data-price');
+  const image = btn.getAttribute('data-image') || '';
+  const category = btn.getAttribute('data-category') || '';
+  
+  console.log('Product:', { id, name, price });
+  
+  if (!id || !name || !price) {
+    alert('Cannot add to cart: Missing product information');
+    return false;
+  }
+  
+  const items = window.getCart();
+  const existingItem = items.find(item => item.id === id);
+  
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    items.push({
+      id: id,
+      name: name,
+      price: parseFloat(price) || 0,
+      image: image || '/images/placeholder.jpg',
+      category: category || 'Uncategorized',
+      color: 'Default',
+      size: 'One Size',
+      quantity: 1
+    });
+  }
+  
+  window.saveCart(items);
+  
+  // Visual feedback
+  const originalText = btn.textContent;
+  btn.textContent = 'Added! ✓';
+  btn.style.background = '#2D6A4F';
+  btn.style.color = 'white';
+  btn.disabled = true;
+  
+  setTimeout(() => {
+    btn.textContent = originalText;
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.disabled = false;
+  }, 1000);
+  
+  alert('✨ ' + name + ' added to cart!');
+  return true;
+};
+
+// Remove item by index
+window.removeItemByIndex = function(index) {
+  if (confirm('Remove this item from your cart?')) {
+    let items = window.getCart();
+    items.splice(index, 1);
+    window.saveCart(items);
+    if (typeof window.renderCart === 'function') {
+      window.renderCart();
+    }
+  }
+};
+
+// Update quantity by index
+window.updateQuantityByIndex = function(index, change) {
+  let items = window.getCart();
+  const item = items[index];
+  if (item) {
+    const newQty = (item.quantity || 1) + change;
+    if (newQty >= 1 && newQty <= 99) {
+      item.quantity = newQty;
+      window.saveCart(items);
+      if (typeof window.renderCart === 'function') {
+        window.renderCart();
+      }
+    }
+  }
+};
+
+// Clear cart
+window.clearCart = function() {
+  if (confirm('Clear all items from your cart?')) {
+    localStorage.removeItem(CART_KEY);
+    window.updateCartCount();
+    if (typeof window.renderCart === 'function') {
+      window.renderCart();
+    }
+  }
+};
+
+// Get subtotal
+window.getCartSubtotal = function() {
+  const items = window.getCart();
+  return items.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 1)), 0);
+};
+
+// Get item count
+window.getCartItemCount = function() {
+  const items = window.getCart();
+  return items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+};
+
+// Initialize on page load
+window.updateCartCount();
+console.log('🛒 Cart ready. Items:', window.getCart().length);
+</script>
+
+<style>
+/* Cart item styles for consistency */
+.cart-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #eee;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+.cart-item-image img {
+  width: 100px;
+  height: 125px;
+  object-fit: cover;
+}
+.cart-item-details {
+  flex: 1;
+  min-width: 200px;
+}
+.cart-item-details h3 {
+  margin-bottom: 0.25rem;
+  font-size: 1.1rem;
+}
+.cart-item-category {
+  color: #999;
+  font-size: 0.85rem;
+}
+.cart-item-color, .cart-item-size {
+  font-size: 0.85rem;
+}
+.cart-item-price {
+  font-weight: 600;
+  color: #2D6A4F;
+}
+.cart-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+}
+.remove-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #999;
+  padding: 5px;
+}
+.remove-btn:hover {
+  color: #D93838;
+}
+.cart-item-quantity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.qty-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+.qty-btn:hover {
+  background: #f5f5f5;
+}
+.qty-input {
+  width: 50px;
+  text-align: center;
+  border: 1px solid #ddd;
+  padding: 0.4rem;
+}
+.cart-item-total {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #2D6A4F;
+  min-width: 100px;
+  text-align: right;
+}
+.empty-cart-message {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border: 1px solid #eee;
+}
+.empty-cart-message p {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+}
+.btn-quick-add.added {
+  background: #2D6A4F !important;
+  color: white !important;
+  border-color: #2D6A4F !important;
+}
+@media (max-width: 768px) {
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cart-item-total {
+    text-align: left;
+  }
+}
+</style>

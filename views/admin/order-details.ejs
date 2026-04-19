@@ -1,0 +1,103 @@
+<%- include('partials/admin-header') %>
+
+<div class="admin-order-details">
+  <div class="page-header">
+    <h2>Order Details</h2>
+    <a href="/admin/orders" class="btn btn-outline">← Back to Orders</a>
+  </div>
+  
+  <div class="order-info-grid">
+    <div class="order-info-card">
+      <h3>Order Information</h3>
+      <p><strong>Order ID:</strong> <%= order.orderId || order._id %></p>
+      <p><strong>Date:</strong> <%= order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A' %></p>
+      <p><strong>Status:</strong> 
+        <span class="badge badge-<%= order.status === 'Delivered' ? 'success' : order.status === 'Processing' ? 'warning' : order.status === 'Shipped' ? 'info' : 'danger' %>">
+          <%= order.status %>
+        </span>
+      </p>
+    </div>
+    
+    <div class="order-info-card">
+      <h3>Customer Information</h3>
+      <p><strong>Name:</strong> <%= order.customerName || order.customer?.name || 'Guest' %></p>
+      <p><strong>Email:</strong> <%= order.customerEmail || order.customer?.email || 'N/A' %></p>
+      <p><strong>Phone:</strong> <%= order.customerPhone || order.customer?.phone || 'N/A' %></p>
+    </div>
+    
+    <div class="order-info-card">
+      <h3>Shipping Address</h3>
+      <% if (order.shippingAddress) { %>
+        <p><%= order.shippingAddress.street %></p>
+        <p><%= order.shippingAddress.city %>, <%= order.shippingAddress.state %></p>
+        <p><%= order.shippingAddress.zipCode %></p>
+        <p><%= order.shippingAddress.country %></p>
+      <% } else { %>
+        <p>No shipping address provided</p>
+      <% } %>
+    </div>
+  </div>
+  
+  <div class="order-items">
+    <h3>Order Items</h3>
+    <% if (order.items && order.items.length > 0) { %>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% order.items.forEach(item => { %>
+            <tr>
+              <td><%= item.name %></td>
+              <td>₦<%= item.price.toLocaleString() %></td>
+              <td><%= item.quantity %></td>
+              <td>₦<%= (item.price * item.quantity).toLocaleString() %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+            <td><strong>₦<%= order.total.toLocaleString() %></strong></td>
+          </tr>
+        </tfoot>
+      </table>
+    <% } else { %>
+      <p>No items in this order.</p>
+    <% } %>
+  </div>
+</div>
+
+<style>
+.order-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.order-info-card {
+  background: white;
+  padding: 1.5rem;
+  border: 1px solid var(--border-light);
+}
+.order-info-card h3 {
+  margin-bottom: 1rem;
+  color: var(--olive);
+}
+.order-items {
+  background: white;
+  padding: 1.5rem;
+  border: 1px solid var(--border-light);
+}
+.order-items h3 {
+  margin-bottom: 1rem;
+  color: var(--olive);
+}
+</style>
+
+<%- include('partials/admin-footer') %>
