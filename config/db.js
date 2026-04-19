@@ -8,6 +8,7 @@ const localStorage = new LocalStorage(storagePath);
 
 let db = null;
 let dbType = null; // 'mongodb' or 'local'
+let retryInterval = null; // Background retry timer
 
 // Collections (stored as JSON arrays)
 const collections = {
@@ -16,7 +17,7 @@ const collections = {
   users: [],
   newsletter: [],
   siteSettings: [],
-  contacts: []  // ← ADDED THIS LINE
+  contacts: []
 };
 
 /**
@@ -48,11 +49,9 @@ class DatabaseAdapter {
                       .toArray();
                   } else {
                     let items = collections[name] || [];
-                    // Apply simple filtering for local storage
                     items = items.filter(item => {
                       return Object.keys(query).every(key => item[key] === query[key]);
                     });
-                    // Simple sort simulation
                     const sortKey = Object.keys(sortObj)[0];
                     if (sortKey) {
                       const direction = sortObj[sortKey];
@@ -61,7 +60,6 @@ class DatabaseAdapter {
                         return a[sortKey] > b[sortKey] ? 1 : -1;
                       });
                     }
-                    // Apply skip and limit
                     items = items.slice(n, n + l);
                     return items;
                   }
@@ -219,16 +217,85 @@ class DatabaseError extends Error {
   }
 }
 
+// Migrate local data to MongoDB
+async function migrateLocalToMongo(mongoDb) {
+  console.log('📦 Migrating local data to MongoDB...');
+  
+  for (const [name, items] of Object.entries(collections)) {
+    if (items.length > 0) {
+      const mongoCollection = mongoDb.collection(name);
+      let migrated = 0;
+      for (const item of items) {
+        try {
+          const { _id, ...itemWithoutId } = item;
+          await mongoCollection.updateOne(
+            { _id: _id },
+            { $set: itemWithoutId },
+            { upsert: true }
+          );
+          migrated++;
+        } catch (e) {
+          console.error(`  ⚠️ Failed to migrate ${name} item:`, e.message);
+        }
+      }
+      console.log(`  ✅ Migrated ${migrated} items from ${name}`);
+    }
+  }
+  console.log('✅ Migration complete!');
+}
+
+// Background retry function
+async function retryMongoConnection() {
+  if (retryInterval) return;
+  
+  retryInterval = setInterval(async () => {
+    if (dbType === 'mongodb') {
+      clearInterval(retryInterval);
+      retryInterval = null;
+      return;
+    }
+    
+    try {
+      const { MongoClient } = require('mongodb');
+      const client = new MongoClient(process.env.MONGO_URI, {
+        connectTimeoutMS: 10000,
+        serverSelectionTimeoutMS: 10000
+      });
+      
+      await client.connect();
+      const mongoDb = client.db('gades-fit');
+      
+      // Switch to MongoDB
+      const newDb = new DatabaseAdapter(mongoDb, 'mongodb');
+      
+      // Migrate local data to MongoDB
+      await migrateLocalToMongo(newDb);
+      
+      db = newDb;
+      dbType = 'mongodb';
+      
+      console.log('✅ MongoDB connection established! Switched from local storage.');
+      clearInterval(retryInterval);
+      retryInterval = null;
+    } catch (error) {
+      // Silent retry - don't spam console
+      // console.log('⏳ MongoDB still unavailable, retrying in 30s...');
+    }
+  }, 30000); // Retry every 30 seconds
+}
+
 async function connectDB() {
   if (db) return db;
 
   try {
-    // Try MongoDB first
+    // Try MongoDB first with longer timeout
     const { MongoClient } = require('mongodb');
     const client = new MongoClient(process.env.MONGO_URI, {
-      connectTimeoutMS: 5000,
-      serverSelectionTimeoutMS: 5000
+      connectTimeoutMS: 30000,        // 30 seconds
+      serverSelectionTimeoutMS: 30000, // 30 seconds
+      socketTimeoutMS: 45000
     });
+    
     await client.connect();
     const mongoDb = client.db('gades-fit');
     db = new DatabaseAdapter(mongoDb, 'mongodb');
@@ -239,7 +306,11 @@ async function connectDB() {
     // Fallback to local storage
     console.log('⚠️ MongoDB unavailable, using local storage');
     console.log('   Reason:', error.message);
-
+    console.log('   Will retry connection in background every 30 seconds...');
+    
+    // Start background retry
+    retryMongoConnection();
+    
     // Load existing data from local storage
     try {
       const savedProducts = localStorage.getItem('products');
@@ -257,7 +328,6 @@ async function connectDB() {
       const savedSettings = localStorage.getItem('siteSettings');
       if (savedSettings) collections.siteSettings = JSON.parse(savedSettings);
 
-      // ← ADDED THIS LINE
       const savedContacts = localStorage.getItem('contacts');
       if (savedContacts) collections.contacts = JSON.parse(savedContacts);
       
